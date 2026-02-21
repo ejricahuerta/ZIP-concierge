@@ -3,6 +3,7 @@
   "buildCommand": "npx prisma generate && npm run build",
   "installCommand": "npm install",
   "framework": null,
+  "outputDirectory": "public",
   "functions": {
     "api/[[...path]].js": {
       "memory": 1024,
