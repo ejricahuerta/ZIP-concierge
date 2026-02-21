@@ -34,9 +34,34 @@ async function createApp(): Promise<INestApplication> {
 /**
  * Vercel serverless handler: forwards (req, res) to the Nest/Express app.
  * The Nest app is created once and reused (warm invocations).
+ * We must wait for the response to finish before returning, or Vercel may
+ * freeze the function before the response is sent.
  */
 export default async function handler(req: Request, res: Response): Promise<void> {
-  const app = await createApp();
-  const expressApp = app.getHttpAdapter().getInstance();
-  expressApp(req, res);
+  try {
+    const app = await createApp();
+    const expressApp = app.getHttpAdapter().getInstance();
+
+    await new Promise<void>((resolve, reject) => {
+      res.once('finish', () => resolve());
+      res.once('error', reject);
+      expressApp(req, res);
+    });
+  } catch (err) {
+    console.error('Serverless handler error:', err);
+    if (!res.headersSent) {
+      res.statusCode = 500;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(
+        JSON.stringify({
+          statusCode: 500,
+          error: 'Internal Server Error',
+          message:
+            process.env.NODE_ENV === 'production'
+              ? 'An unexpected error occurred.'
+              : String(err),
+        }),
+      );
+    }
+  }
 }
