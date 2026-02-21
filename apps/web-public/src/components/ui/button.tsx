@@ -11,6 +11,9 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        /** Use on dark backgrounds for strong contrast (light button, dark text). */
+        inverse:
+          "bg-white text-slate-900 shadow hover:bg-white/90 border border-white/20",
         destructive:
           "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:

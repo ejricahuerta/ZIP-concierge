@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Search, CalendarCheck, ShieldCheck, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -167,22 +168,44 @@ const FAQ_ITEMS = [
   },
 ] as const;
 
+/** Parallax factor: 0 = fixed, 1 = scrolls with content. 0.3–0.5 gives a subtle depth effect. */
+const HERO_PARALLAX_SPEED = 0.35;
+
 export default function HomePage() {
+  const heroRef = useRef<HTMLElement>(null);
+  const [backgroundOffset, setBackgroundOffset] = useState(0);
+
+  useEffect(() => {
+    const onScroll = () => {
+      if (!heroRef.current) return;
+      const scrollY = window.scrollY;
+      setBackgroundOffset(scrollY * HERO_PARALLAX_SPEED);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <main className="min-h-screen bg-[#f4f4f5] text-slate-900">
-      {/* Hero: full viewport height with nav overlay */}
-      <section className="relative h-screen w-full">
+      {/* Hero: full viewport height with sticky nav overlay + parallax background */}
+      <section ref={heroRef} className="relative h-screen w-full">
         <SiteNav overlay />
-        <Card className="h-full overflow-hidden rounded-none border-0 shadow-none sm:rounded-none">
+        <Card className="absolute inset-0 overflow-hidden rounded-none border-0 shadow-none sm:rounded-none">
+          {/* Parallax background layer: moves slower than scroll */}
           <div
-            className="relative flex h-full flex-col items-center justify-center p-6 sm:p-10"
+            className="absolute inset-0 scale-105"
             style={{
               backgroundImage:
                 'linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4)), url(https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=1600&auto=format&fit=crop)',
               backgroundSize: 'cover',
               backgroundPosition: 'center',
+              transform: `translateY(${backgroundOffset}px)`,
+              willChange: 'transform',
             }}
-          >
+            aria-hidden
+          />
+          <div className="relative flex h-full min-h-0 flex-col items-center justify-center p-6 sm:p-10">
             <div className="relative mx-auto w-full max-w-4xl text-center">
               <Badge variant="secondary" className="mb-4 border-white/30 bg-white/10 text-white">
                 See it before you sign
@@ -194,7 +217,7 @@ export default function HomePage() {
                 Browse listings for free. When you&apos;re ready, book an on-site verification and get a detailed report with photos, video, and checklist so you know exactly what you&apos;re getting.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-3">
-                <Button asChild size="lg" className="w-fit">
+                <Button asChild size="lg" variant="inverse" className="w-fit">
                   <Link href="/properties">Browse properties</Link>
                 </Button>
                 <Button asChild size="lg" variant="secondary" className="w-fit border-white/25 bg-white/15 text-white hover:bg-white/25">
@@ -377,7 +400,7 @@ export default function HomePage() {
               <p className="mt-3 text-slate-300">
                 Browse listings and book verification only when you&apos;re ready to move.
               </p>
-              <Button asChild size="lg" className="mt-6">
+              <Button asChild size="lg" variant="inverse" className="mt-6">
                 <Link href="/properties">Start browsing</Link>
               </Button>
             </div>
@@ -387,7 +410,7 @@ export default function HomePage() {
                   placeholder="Your email"
                   className="border-slate-600 bg-slate-800 text-white placeholder:text-slate-400"
                 />
-                <Button className="w-full">Get updates</Button>
+                <Button variant="inverse" className="w-full">Get updates</Button>
               </CardContent>
             </Card>
           </div>

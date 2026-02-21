@@ -97,7 +97,7 @@ export default function PropertyDetailPage() {
               </ul>
               <Button asChild className="mt-5">
                 <Link href={`/verify/packages?propertyId=${property.id}`}>
-                  Verify This Property (Paid)
+                  Verify This Property
                 </Link>
               </Button>
             </CardContent>

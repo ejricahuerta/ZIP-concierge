@@ -45,20 +45,20 @@ export function SiteNav({ compact = false, overlay = false }: SiteNavProps) {
   return (
     <header
       className={cn(
-        'z-10 w-full',
+        'sticky top-0 z-10 w-full',
         overlay
-          ? 'absolute left-0 right-0 top-0 border-0 bg-transparent'
+          ? 'border-0 bg-transparent'
           : 'border-b border-slate-200 bg-white'
       )}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="flex items-center">
+      <div className="mx-auto flex min-h-16 max-w-6xl items-center justify-between gap-8 px-4 py-3">
+        <Link href="/" className="flex shrink-0 items-center py-1">
           <Image
             src="/zip-logo.png"
             alt="ZIP - See it Before You Sign"
-            width={compact ? 112 : 200}
-            height={44}
-            className={cn('h-11 w-auto object-contain', overlay && 'brightness-0 invert')}
+            width={compact ? 140 : 260}
+            height={56}
+            className={cn('h-14 w-auto object-contain', overlay && 'brightness-0 invert')}
             priority
           />
         </Link>

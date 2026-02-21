@@ -151,7 +151,7 @@ export default function PropertiesPage() {
                 <CardFooter className="mt-auto justify-end gap-2 p-4 pt-0">
                     <Button asChild size="sm">
                       <Link href={`/verify/packages?propertyId=${p.id}`}>
-                        Verify (Paid)
+                        Verify
                       </Link>
                     </Button>
                     <Button

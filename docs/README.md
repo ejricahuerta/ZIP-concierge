@@ -52,7 +52,7 @@ Complete documentation for the ZIP Platform MVP - a rental marketplace for inter
 ### Tenant Flow (Current App)
 1. Tenant signs up or logs in.
 2. Tenant browses all listings and opens a property detail.
-3. Tenant chooses **Verify This Property (Paid)**.
+3. Tenant chooses **Verify This Property**.
 4. Tenant selects a package and proceeds to payment.
 5. After payment, the verification purchase appears in the tenant profile under **Verifications**.
 

@@ -18,18 +18,29 @@ export function SiteFooter({ dark = false }: SiteFooterProps) {
       )}
     >
       <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-col items-center text-center">
-          <Image src="/zip-logo.png" alt="ZIP - See it Before You Sign" width={140} height={40} className="h-10 w-auto object-contain" />
-          <p className="mt-2 text-sm">Browse first, verify when needed</p>
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="mb-4 flex justify-center">
+            <Image src="/zip-logo.png" alt="ZIP - See it Before You Sign" width={180} height={56} className="h-14 w-auto object-contain" />
+          </div>
+          <p className="text-sm">Browse first, verify when needed</p>
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white/80 hover:bg-white/10 hover:text-white')}>
+          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white hover:bg-white/15 hover:text-white')}>
             <Link href="#">About</Link>
           </Button>
-          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white/80 hover:bg-white/10 hover:text-white')}>
+          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white hover:bg-white/15 hover:text-white')}>
             <Link href="/#faq">FAQ</Link>
           </Button>
-          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white/80 hover:bg-white/10 hover:text-white')}>
+          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white hover:bg-white/15 hover:text-white')}>
+            <Link href="/privacy">Privacy</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white hover:bg-white/15 hover:text-white')}>
+            <Link href="/terms">Terms</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white hover:bg-white/15 hover:text-white')}>
+            <Link href="/cookies">Cookies</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white hover:bg-white/15 hover:text-white')}>
             <Link href="#">Contact</Link>
           </Button>
         </div>
