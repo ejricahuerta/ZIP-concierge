@@ -1,0 +1,27 @@
+{
+  "name": "zip-concierge",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "description": "ZIP Platform - Verified rental marketplace for international students",
+  "scripts": {
+    "dev": "concurrently -n api,web -c blue,green \"npm run dev --workspace=api\" \"npm run dev --workspace=web-public\"",
+    "dev:api": "npm run dev --workspace=api",
+    "dev:web": "npm run dev --workspace=web-public",
+    "build": "npm run build --workspace=api && npm run build --workspace=web-public",
+    "lint": "npm run lint --workspaces --if-present",
+    "clean": "npm run clean --workspaces --if-present && rimraf node_modules",
+    "db:generate": "npm run prisma:generate --workspace=api",
+    "db:migrate": "npm run prisma:migrate --workspace=api",
+    "db:push": "npm run prisma:push --workspace=api",
+    "db:studio": "npm run prisma:studio --workspace=api",
+    "db:seed": "npm run prisma:seed --workspace=api"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.5",
+    "concurrently": "^9.1.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

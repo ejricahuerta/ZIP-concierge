@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  STUDENT
+  PROPERTY_OWNER
+  ADMIN
+  VERIFICATION_OPERATOR
+}
+
+enum PropertyType {
+  SHARED
+  STUDIO
+  PRIVATE
+  HOMESTAY
+  HOUSE
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  PENDING
+  RENTED
+  UNAVAILABLE
+}
+
+enum VerificationPackage {
+  STANDARD
+  COMPREHENSIVE
+  PREMIUM
+}
+
+enum VerificationStatus {
+  PENDING
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  displayName   String?
+  avatar        String?
+  image         String?
+  passwordHash  String?
+
+  role        UserRole @default(STUDENT)
+  studentId   String?
+  university  String?
+
+  phone              String?
+  preferredLanguage  String?   @default("en")
+  country            String?
+
+  accounts         Account[]
+  sessions         Session[]
+  savedProperties  SavedProperty[]
+  viewings         Viewing[]
+  inquiries        Inquiry[]
+  bookings         Booking[]
+  properties       Property[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model University {
+  id        String   @id @default(cuid())
+  name      String
+  shortName String?
+  city      String
+  province  String
+  latitude  Float
+  longitude Float
+  website   String?
+  logo      String?
+
+  proximity    UniversityProximity[]
+  partnerships UniversityPartnership[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UniversityProximity {
+  id           String   @id @default(cuid())
+  propertyId   String
+  universityId String
+  distanceKm   Float
+
+  property   Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  university University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, universityId])
+  @@index([propertyId])
+  @@index([universityId])
+}
+
+model UniversityPartnership {
+  id           String   @id @default(cuid())
+  universityId String
+  status       String   @default("PENDING")
+  startedAt    DateTime?
+  notes        String?
+
+  university University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@index([universityId])
+}
+
+model Property {
+  id          String         @id @default(cuid())
+  title       String
+  description String
+  type        PropertyType
+  status      PropertyStatus @default(AVAILABLE)
+
+  address   String
+  city      String
+  province  String
+  postalCode String
+  latitude  Float
+  longitude Float
+
+  size          Float
+  bedrooms      Int
+  bathrooms     Int
+  maxOccupants  Int
+
+  price              Float
+  currency           String   @default("CAD")
+  utilitiesIncluded  Boolean  @default(false)
+
+  images     String[]
+  videos     String[]
+  virtualTour String?
+
+  verified             Boolean   @default(false)
+  verificationReportId String?
+  verificationDate     DateTime?
+
+  nearbyUniversities UniversityProximity[]
+  amenities          Json?
+
+  ownerId String
+  owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  savedBy   SavedProperty[]
+  viewings  Viewing[]
+  inquiries Inquiry[]
+  bookings  Booking[]
+  verificationReport VerificationReport?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([city])
+  @@index([type])
+  @@index([verified])
+  @@index([latitude, longitude])
+  @@index([ownerId])
+}
+
+model VerificationReport {
+  id          String               @id @default(cuid())
+  propertyId  String               @unique
+  bookingId   String?              @unique
+  packageType VerificationPackage
+  status      VerificationStatus   @default(PENDING)
+
+  photos    String[]
+  videos    String[]
+  checklist Json?
+  notes     String?
+
+  operatorId     String?
+  scheduledDate  DateTime?
+  completedDate  DateTime?
+  reportUrl      String?
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SavedProperty {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, propertyId])
+  @@index([userId])
+  @@index([propertyId])
+}
+
+model Viewing {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  scheduledAt DateTime?
+  status     String   @default("REQUESTED")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([propertyId])
+}
+
+model Inquiry {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  message    String
+  status     String   @default("OPEN")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([propertyId])
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  userId     String
+  propertyId String
+  startDate  DateTime
+  endDate    DateTime
+  status     String   @default("PENDING")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  verificationReport VerificationReport?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([propertyId])
+}
