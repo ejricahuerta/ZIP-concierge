@@ -7,6 +7,10 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     await this.$connect();
   }
   async onModuleDestroy() {
-    await this.$disconnect();
+    // In serverless (e.g. Vercel), skip disconnect so the connection can be reused
+    // across warm invocations; avoids connection churn and pool exhaustion.
+    if (process.env.VERCEL !== '1') {
+      await this.$disconnect();
+    }
   }
 }

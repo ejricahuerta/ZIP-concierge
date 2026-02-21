@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "buildCommand": "npx prisma generate && npm run build",
+  "installCommand": "npm install",
+  "framework": null,
+  "functions": {
+    "api/[[...path]].js": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  }
+}
