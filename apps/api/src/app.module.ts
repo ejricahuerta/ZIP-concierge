@@ -7,8 +7,10 @@ import { PropertiesModule } from './properties/properties.module';
 import { UniversitiesModule } from './universities/universities.module';
 import { HealthModule } from './health/health.module';
 import { VerificationModule } from './verification/verification.module';
+import { RootController } from './root.controller';
 
 @Module({
+  controllers: [RootController],
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
