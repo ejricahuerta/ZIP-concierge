@@ -33,16 +33,29 @@ async function createApp(): Promise<INestApplication> {
 
 /**
  * Ensures req.url is under /api/v1 so Nest's global prefix matches.
- * On Vercel, the function at api/[[...path]].js may receive path without the
- * leading /api (e.g. /v1/health). Rewrite so Nest sees /api/v1/...
+ * Vercel rewrites send all /api/* to /api/index?path=:path*. We restore the
+ * original path from the `path` query param so Nest can route correctly.
  */
 function ensureApiPath(req: Request): void {
-  const path = req.url?.split('?')[0] ?? '/';
-  if (path.startsWith('/api/v1') || path === '/api' || path === '/api/') return;
-  // Path might be /v1/... or /v1 when Vercel strips the /api segment
-  if (path.startsWith('/v1') || path === '/') {
-    const query = req.url?.includes('?') ? '?' + req.url.split('?')[1] : '';
-    req.url = (path === '/' ? '/api/v1' : '/api' + path) + query;
+  const [pathname, search] = (req.url ?? '/').split('?');
+  const params = search ? new URLSearchParams(search) : null;
+  const rewritePath = params?.get('path');
+
+  // Invoked via Vercel rewrite: /api/index?path=v1/health → /api/v1/health
+  if (pathname === '/api/index' && rewritePath) {
+    const rest = Array.from(params!.entries())
+      .filter(([k]) => k !== 'path')
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+      .join('&');
+    req.url = '/api/' + rewritePath + (rest ? '?' + rest : '');
+    return;
+  }
+
+  if (pathname.startsWith('/api/v1') || pathname === '/api' || pathname === '/api/') return;
+  // Path might be /v1/... or / when Vercel strips the /api segment
+  if (pathname.startsWith('/v1') || pathname === '/') {
+    const query = search ? '?' + search : '';
+    req.url = (pathname === '/' ? '/api/v1' : '/api' + pathname) + query;
   }
 }
 

@@ -3,8 +3,12 @@
   "buildCommand": "npx prisma generate && npm run build",
   "installCommand": "npm install",
   "framework": null,
+  "rewrites": [
+    { "source": "/api", "destination": "/api/index?path=v1" },
+    { "source": "/api/:path*", "destination": "/api/index?path=:path*" }
+  ],
   "functions": {
-    "api/[[...path]].js": {
+    "api/index.js": {
       "memory": 1024,
       "maxDuration": 30
     }
