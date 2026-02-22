@@ -22,6 +22,8 @@ npm run dev
 
 After deploy, the API base URL is `https://<your-project>.vercel.app/api/v1`. Point the frontend’s `NEXT_PUBLIC_API_URL` to this URL.
 
+If the frontend gets **404** from the API: (1) Set the web app’s `NEXT_PUBLIC_API_URL` in Vercel to `https://<api-project>.vercel.app/api/v1` (no trailing slash). (2) Set the API’s `CORS_ORIGIN` to include the web app origin (e.g. `https://your-web.vercel.app`).
+
 ## Deploy as a traditional server (Railway, Render, etc.)
 
 Use `npm run build` then `npm run start`. No `vercel.json` or `api/` folder is used.

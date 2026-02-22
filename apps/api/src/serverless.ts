@@ -32,6 +32,21 @@ async function createApp(): Promise<INestApplication> {
 }
 
 /**
+ * Ensures req.url is under /api/v1 so Nest's global prefix matches.
+ * On Vercel, the function at api/[[...path]].js may receive path without the
+ * leading /api (e.g. /v1/health). Rewrite so Nest sees /api/v1/...
+ */
+function ensureApiPath(req: Request): void {
+  const path = req.url?.split('?')[0] ?? '/';
+  if (path.startsWith('/api/v1') || path === '/api' || path === '/api/') return;
+  // Path might be /v1/... or /v1 when Vercel strips the /api segment
+  if (path.startsWith('/v1') || path === '/') {
+    const query = req.url?.includes('?') ? '?' + req.url.split('?')[1] : '';
+    req.url = (path === '/' ? '/api/v1' : '/api' + path) + query;
+  }
+}
+
+/**
  * Vercel serverless handler: forwards (req, res) to the Nest/Express app.
  * The Nest app is created once and reused (warm invocations).
  * We must wait for the response to finish before returning, or Vercel may
@@ -39,6 +54,7 @@ async function createApp(): Promise<INestApplication> {
  */
 export default async function handler(req: Request, res: Response): Promise<void> {
   try {
+    ensureApiPath(req);
     const app = await createApp();
     const expressApp = app.getHttpAdapter().getInstance();
 
