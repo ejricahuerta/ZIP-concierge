@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { clearAccessToken, getAccessToken } from '@/lib/auth';
 import { useSearchParams } from 'next/navigation';
@@ -57,7 +57,7 @@ type VerificationOrdersResponse = {
   }>;
 };
 
-export default function ProfilePage() {
+function ProfilePageContent() {
   const searchParams = useSearchParams();
   const [activeTab, setActiveTab] = useState<'saved' | 'verifications' | 'contact'>(
     searchParams.get('tab') === 'verifications' ? 'verifications' : 'saved',
@@ -237,5 +237,30 @@ export default function ProfilePage() {
       </div>
       <SiteFooter />
     </main>
+  );
+}
+
+function ProfilePageFallback() {
+  return (
+    <main className="min-h-screen bg-[#f3f4f7]">
+      <SiteNav />
+      <div className="mx-auto max-w-6xl px-4 py-6">
+        <div className="mb-4 flex items-center justify-between">
+          <h1 className="text-3xl font-semibold tracking-tight text-slate-900">My Profile</h1>
+        </div>
+        <Card>
+          <CardContent className="p-8 text-center text-slate-500">Loading profile...</CardContent>
+        </Card>
+      </div>
+      <SiteFooter />
+    </main>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<ProfilePageFallback />}>
+      <ProfilePageContent />
+    </Suspense>
   );
 }

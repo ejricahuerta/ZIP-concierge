@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ const prices: Record<string, number> = {
   PREMIUM: 399,
 };
 
-export default function VerificationPaymentPage() {
+function VerificationPaymentPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const propertyId = searchParams.get('propertyId') ?? '';
@@ -112,5 +112,25 @@ export default function VerificationPaymentPage() {
       </div>
       <SiteFooter />
     </main>
+  );
+}
+
+function VerificationPaymentFallback() {
+  return (
+    <main className="min-h-screen bg-[#f3f4f7]">
+      <SiteNav />
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <p className="text-center text-slate-500">Loading...</p>
+      </div>
+      <SiteFooter />
+    </main>
+  );
+}
+
+export default function VerificationPaymentPage() {
+  return (
+    <Suspense fallback={<VerificationPaymentFallback />}>
+      <VerificationPaymentPageContent />
+    </Suspense>
   );
 }

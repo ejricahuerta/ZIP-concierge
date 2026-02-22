@@ -1,8 +1,8 @@
 'use client';
 
 import Link from 'next/link';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
 import { apiFetch } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
@@ -44,7 +44,7 @@ const packages = [
   },
 ];
 
-export default function VerificationPackagesPage() {
+function VerificationPackagesPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const propertyId = searchParams.get('propertyId');
@@ -226,5 +226,25 @@ export default function VerificationPackagesPage() {
       </div>
       <SiteFooter />
     </main>
+  );
+}
+
+function VerificationPackagesFallback() {
+  return (
+    <main className="min-h-screen bg-[#f3f4f7]">
+      <SiteNav />
+      <div className="mx-auto max-w-6xl px-4 py-10">
+        <p className="text-center text-slate-500">Loading...</p>
+      </div>
+      <SiteFooter />
+    </main>
+  );
+}
+
+export default function VerificationPackagesPage() {
+  return (
+    <Suspense fallback={<VerificationPackagesFallback />}>
+      <VerificationPackagesPageContent />
+    </Suspense>
   );
 }
