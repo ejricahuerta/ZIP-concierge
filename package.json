@@ -2,6 +2,7 @@
   "name": "zip-concierge",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.0.0",
   "workspaces": ["apps/*"],
   "description": "ZIP Platform - Verified rental marketplace for international students",
   "scripts": {
