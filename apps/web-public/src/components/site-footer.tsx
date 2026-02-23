@@ -26,6 +26,9 @@ export function SiteFooter({ dark = false }: SiteFooterProps) {
         </div>
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white hover:bg-white/15 hover:text-white')}>
+            <Link href="/properties">Properties</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white hover:bg-white/15 hover:text-white')}>
             <Link href="#">About</Link>
           </Button>
           <Button asChild variant="ghost" size="sm" className={cn(dark && 'text-white hover:bg-white/15 hover:text-white')}>
