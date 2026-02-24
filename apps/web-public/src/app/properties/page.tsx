@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 type Property = {
   id: string;
@@ -28,6 +29,7 @@ type Property = {
   bedrooms: number;
   images: string[];
   createdAt?: string;
+  owner?: { id: string; name: string | null };
 };
 
 type SortValue = 'recommended' | 'price-low-high' | 'newest';
@@ -54,6 +56,7 @@ export default function PropertiesPage() {
   const [sortBy, setSortBy] = useState<SortValue>(DEFAULT_SORT);
   const [savedIds, setSavedIds] = useState<string[]>([]);
   const [isAuthed, setIsAuthed] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getAccessToken();
@@ -62,6 +65,9 @@ export default function PropertiesPage() {
       apiFetch<{ success: true; data: Array<{ propertyId: string }> }>('/users/me/saved', undefined, true)
         .then((json) => setSavedIds(json.data.map((item) => item.propertyId)))
         .catch(() => setSavedIds([]));
+      apiFetch<{ success: true; data: { user: { id: string } } }>('/users/me', undefined, true)
+        .then((json) => setCurrentUserId(json.data.user.id))
+        .catch(() => setCurrentUserId(null));
     }
   }, []);
 
@@ -153,21 +159,21 @@ export default function PropertiesPage() {
   }
 
   return (
-    <main className="min-h-screen">
+    <main className="min-h-screen overflow-x-hidden">
       <SiteNav />
 
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Properties</h1>
-        <p className="mt-1 text-slate-700">Browse all listings and verify on demand.</p>
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">Properties</h1>
+        <p className="mt-1 text-sm text-slate-700 sm:text-base">Browse all listings and verify on demand.</p>
 
-        <Card className="mt-5">
-          <CardContent className="grid gap-4 p-4 md:grid-cols-2 lg:grid-cols-6">
+        <Card className="mt-4 sm:mt-5">
+          <CardContent className="grid grid-cols-1 gap-4 p-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-6">
             <div className="space-y-1.5">
               <Label htmlFor="properties-city" className="text-xs uppercase tracking-wide text-slate-500">
                 Location
               </Label>
               <Select value={city} onValueChange={setCity}>
-                <SelectTrigger id="properties-city" className="h-10 rounded-lg bg-white px-3">
+                <SelectTrigger id="properties-city" className="min-h-11 rounded-lg bg-white px-3">
                   <SelectValue placeholder="Select city" />
                 </SelectTrigger>
                 <SelectContent>
@@ -183,7 +189,7 @@ export default function PropertiesPage() {
                 Property type
               </Label>
               <Select value={type} onValueChange={setType}>
-                <SelectTrigger id="properties-type" className="h-10 rounded-lg bg-white px-3">
+                <SelectTrigger id="properties-type" className="min-h-11 rounded-lg bg-white px-3">
                   <SelectValue placeholder="Select property type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -210,7 +216,7 @@ export default function PropertiesPage() {
                   placeholder="Min"
                   value={minPrice}
                   onChange={(event) => setMinPrice(event.target.value)}
-                  className="h-10 rounded-lg bg-white"
+                  className="min-h-11 rounded-lg bg-white"
                 />
                 <Input
                   id="properties-max-price"
@@ -220,7 +226,7 @@ export default function PropertiesPage() {
                   placeholder="Max"
                   value={maxPrice}
                   onChange={(event) => setMaxPrice(event.target.value)}
-                  className="h-10 rounded-lg bg-white"
+                  className="min-h-11 rounded-lg bg-white"
                 />
               </div>
             </div>
@@ -230,7 +236,7 @@ export default function PropertiesPage() {
                 Sort by
               </Label>
               <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortValue)}>
-                <SelectTrigger id="properties-sort" className="h-10 rounded-lg bg-white px-3">
+                <SelectTrigger id="properties-sort" className="min-h-11 rounded-lg bg-white px-3">
                   <SelectValue placeholder="Sort by" />
                 </SelectTrigger>
                 <SelectContent>
@@ -250,13 +256,13 @@ export default function PropertiesPage() {
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search by neighborhood / keyword"
-                className="h-10 rounded-lg bg-white"
+                className="min-h-11 rounded-lg bg-white"
               />
             </div>
 
             {hasActiveFilters ? (
               <div className="md:col-span-2 lg:col-span-6">
-                <Button type="button" variant="outline" onClick={clearFilters} className="w-full sm:w-auto">
+                <Button type="button" variant="outline" onClick={clearFilters} className="min-h-11 w-full touch-manipulation sm:w-auto">
                   Clear filters
                 </Button>
               </div>
@@ -277,7 +283,7 @@ export default function PropertiesPage() {
               : 'No properties yet. Run the API and add seed data.'}
           </p>
         ) : (
-          <ul className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {visibleProperties.map((property) => (
               <li key={property.id}>
                 <Card className="flex h-full flex-col overflow-hidden transition hover:shadow-md">
@@ -303,22 +309,26 @@ export default function PropertiesPage() {
                         ${property.price}
                         <span className="text-slate-500">/mo</span>
                       </p>
-                      <p className="mt-1 text-xs text-slate-500">Verification starts at $149</p>
+                      {(!currentUserId || property.owner?.id !== currentUserId) && (
+                        <p className="mt-1 text-xs text-slate-500">Verification starts at $149</p>
+                      )}
                     </div>
                   </Link>
-                  <CardFooter className="mt-auto justify-end gap-2 p-4 pt-0">
-                    <Button asChild size="sm">
-                      <Link href={`/verify/packages?propertyId=${property.id}`}>
-                        Verify
-                      </Link>
-                    </Button>
+                  <CardFooter className="mt-auto flex flex-col gap-2 p-4 pt-0 sm:flex-row sm:justify-end">
+                    {(!currentUserId || property.owner?.id !== currentUserId) && (
+                      <Button asChild size="sm" className="min-h-11 w-full touch-manipulation sm:w-auto">
+                        <Link href={`/verify/packages?propertyId=${property.id}`}>
+                          Verify
+                        </Link>
+                      </Button>
+                    )}
                     <Button
                       type="button"
                       variant={savedIds.includes(property.id) ? 'secondary' : 'outline'}
                       size="sm"
                       disabled={!isAuthed}
                       onClick={() => toggleSaved(property.id)}
-                      className={!isAuthed ? 'cursor-not-allowed' : ''}
+                      className={cn('min-h-11 touch-manipulation', !isAuthed ? 'cursor-not-allowed' : 'w-full sm:w-auto')}
                     >
                       {savedIds.includes(property.id) ? 'Saved' : 'Save'}
                     </Button>

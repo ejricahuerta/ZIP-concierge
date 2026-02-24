@@ -1,11 +1,13 @@
 'use client';
 
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { type FormEvent, Fragment, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import {
   ArrowRight,
   Building2,
   CalendarCheck,
+  ChevronDown,
+  ChevronRight,
   ClipboardCheck,
   Search,
   ShieldCheck,
@@ -26,50 +28,9 @@ import {
 
 /** Verification packages from BUSINESS_ANALYSIS.md */
 const VERIFICATION_PACKAGES = [
-  {
-    name: 'Standard',
-    price: 149,
-    description: 'Essential verification for basic due diligence.',
-    features: [
-      'Exterior + interior photo set (15+)',
-      'On-site verification checklist',
-      'Landlord identity confirmation',
-      'Report delivery within 48 hours',
-    ],
-    cta: 'Choose Standard',
-    highlighted: false,
-  },
-  {
-    name: 'Comprehensive',
-    price: 249,
-    description: 'Detailed documentation with video and utility verification.',
-    features: [
-      'Expanded photo set with annotations (30+)',
-      'Walkthrough video (5 minutes)',
-      '360° camera walkthrough views',
-      'Full verification checklist with notes',
-      'Utility functionality verification',
-      'Report delivery within 24 hours',
-    ],
-    cta: 'Choose Comprehensive',
-    highlighted: true,
-  },
-  {
-    name: 'Premium',
-    price: 399,
-    description: 'Priority scheduling with comprehensive documentation.',
-    features: [
-      'Comprehensive photo set with annotations (50+)',
-      'Detailed walkthrough video (10 minutes)',
-      'Interactive 360° walkthrough',
-      'Utility + appliance functionality checks',
-      'Landlord interview summary',
-      'Same-day report delivery',
-      'Priority scheduling (within 24 hours)',
-    ],
-    cta: 'Choose Premium',
-    highlighted: false,
-  },
+  { name: 'Standard', price: 149, description: 'Essential verification for basic due diligence.', features: ['Exterior + interior photo set (15+)', 'On-site verification checklist', 'Landlord identity confirmation', 'Report delivery within 48 hours'], cta: 'Choose Standard', highlighted: false },
+  { name: 'Comprehensive', price: 249, description: 'Detailed documentation with video and utility verification.', features: ['Expanded photo set with annotations (30+)', 'Walkthrough video (5 minutes)', '360° camera walkthrough views', 'Full verification checklist with notes', 'Utility functionality verification', 'Report delivery within 24 hours'], cta: 'Choose Comprehensive', highlighted: true },
+  { name: 'Premium', price: 399, description: 'Priority scheduling with comprehensive documentation.', features: ['Comprehensive photo set with annotations (50+)', 'Detailed walkthrough video (10 minutes)', 'Interactive 360° walkthrough', 'Utility + appliance functionality checks', 'Landlord interview summary', 'Same-day report delivery', 'Priority scheduling (within 24 hours)'], cta: 'Choose Premium', highlighted: false },
 ] as const;
 
 /** Service cards for "Our services" – single grid, image left/right alternate */
@@ -77,7 +38,7 @@ const SERVICE_ITEMS = [
   {
     title: 'Marketplace for renters',
     description:
-      'Browse listings for free. Filter by city, type, and price. Save properties and see which are verified—no payment until you\'re ready.',
+      'Browse listings for free. Filter by city, type, and price. Save properties and see which are verified. No payment until you\'re ready.',
     image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800&auto=format&fit=crop',
     imageAlt: 'Person browsing property listings on laptop',
     href: '/properties',
@@ -113,8 +74,8 @@ const SERVICE_ITEMS = [
       'List your property, reach remote and international renters, and get verification badges. Manage listings, analytics, and inquiries in one place.',
     image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800&auto=format&fit=crop',
     imageAlt: 'Property owner dashboard',
-    href: '/properties',
-    cta: 'List a property',
+    href: '/landlord',
+    cta: 'List your property',
     icon: Building2,
     isPrimary: false,
   },
@@ -192,17 +153,6 @@ export default function HomePage() {
   const [email, setEmail] = useState('');
   const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
-  useEffect(() => {
-    const onScroll = () => {
-      if (!heroRef.current) return;
-      const scrollY = window.scrollY;
-      setBackgroundOffset(scrollY * HERO_PARALLAX_SPEED);
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
-
   const handleEmailSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const normalizedEmail = email.trim();
@@ -210,19 +160,26 @@ export default function HomePage() {
       setEmailStatus('error');
       return;
     }
-
-    // Placeholder success flow until backend subscription endpoint is added.
     setEmail('');
     setEmailStatus('success');
   };
 
+  useEffect(() => {
+    const onScroll = () => {
+      if (!heroRef.current) return;
+      setBackgroundOffset(window.scrollY * HERO_PARALLAX_SPEED);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
-    <main className="min-h-screen bg-[#f4f4f5] text-slate-900">
+    <main className="min-h-screen overflow-x-hidden bg-[#f4f4f5] text-slate-900">
       {/* Hero: full viewport height with sticky nav overlay + parallax background */}
       <section ref={heroRef} className="relative h-screen w-full">
         <SiteNav overlay />
         <Card className="absolute inset-0 overflow-hidden rounded-none border-0 shadow-none sm:rounded-none">
-          {/* Parallax background layer: moves slower than scroll */}
           <div
             className="absolute inset-0 scale-105"
             style={{
@@ -268,8 +225,7 @@ export default function HomePage() {
           </div>
         </Card>
       </section>
-
-      <div className="mx-auto max-w-6xl space-y-16 px-4 py-12 sm:space-y-20 sm:py-16">
+      <div className="mx-auto max-w-6xl space-y-12 px-4 py-8 sm:space-y-16 sm:px-6 sm:py-12 md:space-y-20 md:py-16">
         {/* Our services – what the business does (aligned with docs BUSINESS_ANALYSIS.md § Services) */}
         <section className="space-y-8">
           <div>
@@ -349,9 +305,11 @@ export default function HomePage() {
                     : 'border-slate-200 bg-white shadow-sm hover:shadow-md'
                 }`}
               >
-                <CardHeader className="relative space-y-2 pb-2">
+                <CardHeader className={`relative space-y-2 pb-2 ${pkg.highlighted ? 'pr-28' : ''}`}>
                   {pkg.highlighted && (
-                    <Badge className="absolute right-0 top-0 bg-white text-slate-900">Popular</Badge>
+                    <Badge className="absolute right-4 top-4 shrink-0 px-4 py-1.5 text-xs font-medium bg-white text-slate-900">
+                      Popular
+                    </Badge>
                   )}
                   <CardTitle className={`text-lg ${pkg.highlighted ? 'text-white' : 'text-slate-900'}`}>
                     {pkg.name}
@@ -422,17 +380,13 @@ export default function HomePage() {
             <h2 className={SECTION_TITLE_CLASS}>Your home in 3 steps</h2>
             <p className="mt-2 text-base text-slate-700">Simple, transparent, and designed so you only pay when it matters.</p>
           </div>
-          <div className="relative">
-            <div
-              className="pointer-events-none absolute left-[17%] right-[17%] top-1/2 hidden h-px -translate-y-1/2 bg-slate-300 md:block"
-              aria-hidden
-            />
-            <div className="relative grid gap-6 sm:gap-8 md:grid-cols-3">
-              {STEPS.map((step, index) => {
-                const Icon = step.icon;
-                return (
-                  <div key={step.num} className="relative flex flex-col">
-                    <Card className="flex flex-1 flex-col overflow-hidden rounded-2xl border-slate-200 shadow-sm transition-shadow hover:shadow-md">
+          <div className="flex flex-col items-center md:flex-row md:items-stretch md:justify-center md:gap-0">
+            {STEPS.map((step, index) => {
+              const Icon = step.icon;
+              return (
+                <Fragment key={step.num}>
+                  <div className="flex w-full max-w-sm flex-1 flex-col md:max-w-none">
+                    <Card className="flex h-full flex-col overflow-hidden rounded-2xl border-slate-200 shadow-sm transition-shadow hover:shadow-md">
                       <div className="relative h-40 w-full overflow-hidden bg-slate-100">
                         <img
                           src={step.image}
@@ -458,16 +412,25 @@ export default function HomePage() {
                         <p className="mt-2 flex-1 text-sm text-slate-700">{step.desc}</p>
                       </CardContent>
                     </Card>
+                    {/* Mobile: down arrow between stacked steps */}
                     {index < STEPS.length - 1 && (
-                      <div className="absolute right-0 top-1/2 hidden -translate-y-1/2 translate-x-1/2 items-center gap-2 md:flex" aria-hidden>
-                        <span className="h-px w-7 bg-slate-300" />
-                        <ArrowRight className="h-4 w-4 text-slate-400" />
+                      <div className="flex shrink-0 justify-center py-3 md:hidden" aria-hidden>
+                        <ChevronDown className="h-6 w-6 text-slate-400" />
                       </div>
                     )}
                   </div>
-                );
-              })}
-            </div>
+                  {/* Desktop: arrow between columns only, no lines */}
+                  {index < STEPS.length - 1 && (
+                    <div
+                      className="hidden shrink-0 items-center justify-center self-center px-1 md:flex"
+                      aria-hidden
+                    >
+                      <ChevronRight className="h-8 w-8 text-slate-400" />
+                    </div>
+                  )}
+                </Fragment>
+              );
+            })}
           </div>
           <div className="flex justify-center">
             <Button asChild size="lg" className="min-w-[220px]">

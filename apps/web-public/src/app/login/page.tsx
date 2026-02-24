@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { FormEvent, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { setAccessToken } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,8 @@ import { SiteNav } from '@/components/site-nav';
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const nextUrl = searchParams.get('next');
   const [email, setEmail] = useState('student@zipconcierge.dev');
   const [password, setPassword] = useState('Password123!');
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,8 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       setAccessToken(json.data.accessToken);
-      router.push('/profile');
+      const redirect = nextUrl && nextUrl.startsWith('/') ? nextUrl : '/profile';
+      router.push(redirect);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Sign in failed');
@@ -41,9 +44,9 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f3f4f7]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f3f4f7]">
       <SiteNav />
-      <div className="mx-auto flex max-w-6xl items-center justify-center px-4 py-12">
+      <div className="mx-auto flex max-w-6xl items-center justify-center px-4 py-8 sm:py-12">
         <Card className="w-full max-w-md">
           <CardHeader>
             <CardTitle>Sign in</CardTitle>
@@ -68,7 +71,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full"
+                className="min-h-11 w-full touch-manipulation"
               >
                 {loading ? 'Signing in...' : 'Sign in'}
               </Button>

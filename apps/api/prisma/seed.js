@@ -24,7 +24,7 @@ async function main() {
     },
   });
 
-  await prisma.user.upsert({
+  const student = await prisma.user.upsert({
     where: { email: "student@zipconcierge.dev" },
     update: {
       name: "ZIP Student Demo",
@@ -94,9 +94,11 @@ async function main() {
     where: { property: { ownerId: owner.id } },
   });
 
-  await prisma.verificationReport.deleteMany({
-    where: { property: { ownerId: owner.id } },
-  });
+  const ownerPropertyIds = (await prisma.property.findMany({ where: { ownerId: owner.id }, select: { id: true } })).map((p) => p.id);
+  if (ownerPropertyIds.length > 0) {
+    await prisma.verificationReport.deleteMany({ where: { propertyId: { in: ownerPropertyIds } } });
+    await prisma.booking.deleteMany({ where: { propertyId: { in: ownerPropertyIds } } });
+  }
 
   await prisma.property.deleteMany({
     where: { ownerId: owner.id },
@@ -123,8 +125,6 @@ async function main() {
         "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?q=80&w=1200&auto=format&fit=crop",
       ],
       videos: [],
-      verified: true,
-      verificationDate: new Date(),
       amenities: { wifi: true, laundry: true, furnished: true, gym: false },
       nearby: [{ universityId: universities[0].id, distanceKm: 0.8 }],
       packageType: VerificationPackage.COMPREHENSIVE,
@@ -149,8 +149,6 @@ async function main() {
         "https://images.unsplash.com/photo-1484154218962-a197022b5858?q=80&w=1200&auto=format&fit=crop",
       ],
       videos: [],
-      verified: false,
-      verificationDate: null,
       amenities: { wifi: true, laundry: true, furnished: false, gym: true },
       nearby: [{ universityId: universities[1].id, distanceKm: 2.1 }],
       packageType: null,
@@ -175,8 +173,6 @@ async function main() {
         "https://images.unsplash.com/photo-1493666438817-866a91353ca9?q=80&w=1200&auto=format&fit=crop",
       ],
       videos: [],
-      verified: true,
-      verificationDate: new Date(),
       amenities: { wifi: true, laundry: true, furnished: true, gym: true },
       nearby: [
         { universityId: universities[0].id, distanceKm: 1.5 },
@@ -206,8 +202,6 @@ async function main() {
         utilitiesIncluded: data.utilitiesIncluded,
         images: data.images,
         videos: data.videos,
-        verified: data.verified,
-        verificationDate: data.verificationDate,
         amenities: data.amenities,
         ownerId: owner.id,
       },
@@ -224,9 +218,19 @@ async function main() {
     }
 
     if (data.packageType) {
+      const booking = await prisma.booking.create({
+        data: {
+          userId: student.id,
+          propertyId: created.id,
+          startDate: new Date(),
+          endDate: new Date(),
+          status: `PAID_${data.packageType}`,
+        },
+      });
       await prisma.verificationReport.create({
         data: {
           propertyId: created.id,
+          bookingId: booking.id,
           packageType: data.packageType,
           status: VerificationStatus.COMPLETED,
           photos: created.images,

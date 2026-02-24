@@ -55,23 +55,32 @@ export class UsersService {
   }
 
   async getSavedProperties(userId: string) {
-    return this.prisma.savedProperty.findMany({
+    const rows = await this.prisma.savedProperty.findMany({
       where: { userId },
       include: {
         property: {
-          select: {
-            id: true,
-            title: true,
-            city: true,
-            type: true,
-            price: true,
-            bedrooms: true,
-            verified: true,
-            images: true,
+          include: {
+            verificationReports: { where: { status: 'COMPLETED' }, select: { id: true } },
           },
         },
       },
       orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((row) => {
+      const { verificationReports, ...property } = row.property;
+      return {
+        ...row,
+        property: {
+          id: property.id,
+          title: property.title,
+          city: property.city,
+          type: property.type,
+          price: property.price,
+          bedrooms: property.bedrooms,
+          images: property.images,
+          verified: verificationReports.length > 0,
+        },
+      };
     });
   }
 

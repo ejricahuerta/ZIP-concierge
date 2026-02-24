@@ -52,6 +52,13 @@ function VerificationPackagesPageContent() {
   const [limitationsOpen, setLimitationsOpen] = useState(false);
 
   useEffect(() => {
+    if (!getAccessToken()) {
+      const next = propertyId
+        ? `/verify/packages?propertyId=${encodeURIComponent(propertyId)}`
+        : '/verify/packages';
+      router.replace('/login?next=' + encodeURIComponent(next));
+      return;
+    }
     if (!propertyId) {
       router.replace('/properties');
     }
@@ -85,10 +92,10 @@ function VerificationPackagesPageContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f3f4f7]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f3f4f7]">
       <SiteNav />
 
-      <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:py-10">
         {!propertyId ? (
           <Card className="mx-auto max-w-2xl">
             <CardContent className="p-6 text-center">
@@ -117,13 +124,15 @@ function VerificationPackagesPageContent() {
           </p>
         ) : null}
 
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:gap-5 md:grid-cols-3">
           {packages.map((pkg) => (
-            <Card key={pkg.name}>
-              <CardContent className="p-5">
-                <div className="mb-2 flex items-center justify-between">
+            <Card key={pkg.name} className="overflow-hidden">
+              <CardContent className="pl-6 pr-8 pt-8 pb-6">
+                <div className="mb-2 flex items-center justify-between gap-4">
                   <h2 className="text-xl font-semibold text-slate-900">{pkg.name}</h2>
-                  {pkg.featured ? <Badge>Popular</Badge> : null}
+                  {pkg.featured ? (
+                    <Badge className="shrink-0 px-5 py-2 text-xs font-medium">Popular</Badge>
+                  ) : null}
                 </div>
                 <p className="text-2xl font-semibold tracking-tight text-slate-900">${pkg.price}</p>
                 <p className="mt-2 text-sm text-slate-600">{pkg.description}</p>
@@ -143,14 +152,14 @@ function VerificationPackagesPageContent() {
                   type="button"
                   onClick={startStandardCheckout}
                   disabled={!propertyId}
-                  className="mt-5 w-full"
+                  className="mt-5 min-h-11 w-full touch-manipulation"
                 >
                   Buy Standard (Stripe)
                 </Button>
               ) : (
                 <Button
                   type="button"
-                  className="mt-5 w-full"
+                  className="mt-5 min-h-11 w-full touch-manipulation"
                   onClick={() => {
                     if (!acknowledged) {
                       setLimitationsOpen(true);
@@ -173,7 +182,7 @@ function VerificationPackagesPageContent() {
           After Stripe success, open <span className="font-mono">/verify/success</span>; profile updates via webhook.
         </p>
 
-        <div className="mt-6 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
+        <div className="mt-6 flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600">
             Please review and accept service limitations before selecting a package.
           </p>
@@ -231,7 +240,7 @@ function VerificationPackagesPageContent() {
 
 function VerificationPackagesFallback() {
   return (
-    <main className="min-h-screen bg-[#f3f4f7]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f3f4f7]">
       <SiteNav />
       <div className="mx-auto max-w-6xl px-4 py-10">
         <p className="text-center text-slate-500">Loading...</p>

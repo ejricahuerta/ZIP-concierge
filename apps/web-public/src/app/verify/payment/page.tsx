@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Suspense, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ const prices: Record<string, number> = {
 };
 
 function VerificationPaymentPageContent() {
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
   const propertyId = searchParams.get('propertyId') ?? '';
@@ -25,10 +26,15 @@ function VerificationPaymentPageContent() {
   const token = getAccessToken();
 
   useEffect(() => {
+    if (!token) {
+      const search = typeof window !== 'undefined' ? window.location.search : '';
+      router.replace('/login?next=' + encodeURIComponent(pathname + search));
+      return;
+    }
     if (!propertyId) {
       router.replace('/properties');
     }
-  }, [propertyId, router]);
+  }, [propertyId, router, token, pathname]);
 
   async function payNow() {
     if (!propertyId || !token) return;
@@ -46,9 +52,9 @@ function VerificationPaymentPageContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f3f4f7]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f3f4f7]">
       <SiteNav />
-      <div className="mx-auto max-w-2xl px-4 py-12">
+      <div className="mx-auto max-w-2xl px-4 py-8 sm:py-12">
         {!propertyId ? (
           <Card className="mx-auto max-w-2xl">
             <CardContent className="p-6 text-center">
@@ -67,7 +73,7 @@ function VerificationPaymentPageContent() {
             <Link href={propertyId ? `/verify/packages?propertyId=${propertyId}` : '/verify/packages'}>← Back to packages</Link>
           </Button>
         </div>
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Verification Payment</h1>
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl md:text-3xl">Verification Payment</h1>
         <p className="mt-2 text-sm text-slate-600">
           Complete payment to place your verification request.
         </p>
@@ -100,7 +106,7 @@ function VerificationPaymentPageContent() {
             type="button"
             onClick={payNow}
             disabled={loading || !propertyId}
-            className="mt-6 w-full"
+            className="mt-6 min-h-11 w-full touch-manipulation"
           >
             {loading ? 'Processing payment...' : 'Pay & Request Verification'}
           </Button>
@@ -117,7 +123,7 @@ function VerificationPaymentPageContent() {
 
 function VerificationPaymentFallback() {
   return (
-    <main className="min-h-screen bg-[#f3f4f7]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f3f4f7]">
       <SiteNav />
       <div className="mx-auto max-w-2xl px-4 py-12">
         <p className="text-center text-slate-500">Loading...</p>

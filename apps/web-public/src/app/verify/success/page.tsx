@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getAccessToken } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -10,14 +11,14 @@ import { SiteFooter } from '@/components/site-footer';
 import { SiteNav } from '@/components/site-nav';
 
 export default function VerificationSuccessPage() {
+  const router = useRouter();
   const [status, setStatus] = useState<'idle' | 'processing' | 'success' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
   useEffect(() => {
     const token = getAccessToken();
     if (!token) {
-      setStatus('error');
-      setMessage('Please sign in first to view your verification purchase.');
+      router.replace('/login?next=' + encodeURIComponent('/verify/success'));
       return;
     }
 
@@ -40,13 +41,13 @@ export default function VerificationSuccessPage() {
         setStatus('error');
         setMessage('Could not check verification status. Please open Profile in a moment.');
       });
-  }, []);
+  }, [router]);
 
   return (
-    <main className="min-h-screen bg-[#f3f4f7]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f3f4f7]">
       <SiteNav />
-      <div className="mx-auto max-w-2xl px-4 py-14">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-900">Verification Payment Result</h1>
+      <div className="mx-auto max-w-2xl px-4 py-8 sm:py-14">
+        <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl md:text-3xl">Verification Payment Result</h1>
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Status</CardTitle>
