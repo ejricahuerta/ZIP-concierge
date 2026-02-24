@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AUTH_CHANGED_EVENT, clearAccessToken, getAccessToken } from '@/lib/auth';
+import { apiFetch } from '@/lib/api';
 import { Menu, X } from 'lucide-react';
 
 type SiteNavProps = {
@@ -15,20 +16,26 @@ type SiteNavProps = {
   overlay?: boolean;
 };
 
+type MeResponse = {
+  success: true;
+  data: { user: { id: string; role?: string } };
+};
+
 export function SiteNav({ compact = false, overlay = false }: SiteNavProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthed, setIsAuthed] = useState(() =>
-    typeof window !== 'undefined' ? Boolean(getAccessToken()) : false
-  );
+  const [isAuthed, setIsAuthed] = useState(false);
+  const [hasMounted, setHasMounted] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const navClass = compact ? 'text-sm' : '';
   const isActive = (path: string) => pathname === path || pathname?.startsWith(`${path}/`);
+  const isLandlord = userRole === 'PROPERTY_OWNER';
 
   useEffect(() => {
     const syncAuth = () => setIsAuthed(Boolean(getAccessToken()));
-
     syncAuth();
+    setHasMounted(true);
     window.addEventListener('focus', syncAuth);
     window.addEventListener('storage', syncAuth);
     window.addEventListener(AUTH_CHANGED_EVENT, syncAuth as EventListener);
@@ -39,6 +46,16 @@ export function SiteNav({ compact = false, overlay = false }: SiteNavProps) {
       window.removeEventListener(AUTH_CHANGED_EVENT, syncAuth as EventListener);
     };
   }, []);
+
+  useEffect(() => {
+    if (!hasMounted || !isAuthed) {
+      setUserRole(null);
+      return;
+    }
+    apiFetch<MeResponse>('/users/me', undefined, true)
+      .then((res) => setUserRole(res.data.user.role ?? null))
+      .catch(() => setUserRole(null));
+  }, [hasMounted, isAuthed]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -64,10 +81,20 @@ export function SiteNav({ compact = false, overlay = false }: SiteNavProps) {
       <Button asChild variant="ghost" size="sm" className={cn('min-h-11 shrink-0 px-4', linkStateClass('/properties'))}>
         <Link href="/properties">Properties</Link>
       </Button>
-      <Button asChild variant="ghost" size="sm" className={cn('min-h-11 shrink-0 px-4', linkStateClass('/landlord'))}>
-        <Link href="/landlord">For landlords</Link>
-      </Button>
-      {isAuthed ? (
+      {!hasMounted || !isAuthed ? (
+        <Button asChild variant="ghost" size="sm" className={cn('min-h-11 shrink-0 px-4', linkStateClass('/landlord'))}>
+          <Link href="/landlord">For landlords</Link>
+        </Button>
+      ) : isLandlord ? (
+        <Button asChild variant="ghost" size="sm" className={cn('min-h-11 shrink-0 px-4', linkStateClass('/landlord/dashboard'))}>
+          <Link href="/landlord/dashboard">Dashboard</Link>
+        </Button>
+      ) : null}
+      {!hasMounted || !isAuthed ? (
+        <Button asChild variant="ghost" size="sm" className={cn('min-h-11 shrink-0 px-4', linkStateClass('/login'))}>
+          <Link href="/login">Sign in</Link>
+        </Button>
+      ) : (
         <>
           <Button asChild variant="ghost" size="sm" className={cn('min-h-11 shrink-0 px-4', linkStateClass('/profile'))}>
             <Link href="/profile">My Profile</Link>
@@ -82,10 +109,6 @@ export function SiteNav({ compact = false, overlay = false }: SiteNavProps) {
             Log out
           </Button>
         </>
-      ) : (
-        <Button asChild variant="ghost" size="sm" className={cn('min-h-11 shrink-0 px-4', linkStateClass('/login'))}>
-          <Link href="/login">Sign in</Link>
-        </Button>
       )}
     </>
   );
@@ -149,13 +172,29 @@ export function SiteNav({ compact = false, overlay = false }: SiteNavProps) {
           >
             Properties
           </Link>
-          <Link
-            href="/landlord"
-            className={cn('flex min-h-11 w-full items-center rounded-lg px-4 text-base font-medium', linkStateClass('/landlord'))}
-          >
-            For landlords
-          </Link>
-          {isAuthed ? (
+          {!hasMounted || !isAuthed ? (
+            <Link
+              href="/landlord"
+              className={cn('flex min-h-11 w-full items-center rounded-lg px-4 text-base font-medium', linkStateClass('/landlord'))}
+            >
+              For landlords
+            </Link>
+          ) : isLandlord ? (
+            <Link
+              href="/landlord/dashboard"
+              className={cn('flex min-h-11 w-full items-center rounded-lg px-4 text-base font-medium', linkStateClass('/landlord/dashboard'))}
+            >
+              Dashboard
+            </Link>
+          ) : null}
+          {!hasMounted || !isAuthed ? (
+            <Link
+              href="/login"
+              className={cn('flex min-h-11 w-full items-center rounded-lg px-4 text-base font-medium', linkStateClass('/login'))}
+            >
+              Sign in
+            </Link>
+          ) : (
             <>
               <Link
                 href="/profile"
@@ -174,13 +213,6 @@ export function SiteNav({ compact = false, overlay = false }: SiteNavProps) {
                 Log out
               </button>
             </>
-          ) : (
-            <Link
-              href="/login"
-              className={cn('flex min-h-11 w-full items-center rounded-lg px-4 text-base font-medium', linkStateClass('/login'))}
-            >
-              Sign in
-            </Link>
           )}
         </nav>
       </div>
