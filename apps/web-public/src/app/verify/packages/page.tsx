@@ -7,7 +7,15 @@ import { apiFetch } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -52,6 +60,13 @@ function VerificationPackagesPageContent() {
   const [limitationsOpen, setLimitationsOpen] = useState(false);
 
   useEffect(() => {
+    if (!getAccessToken()) {
+      const next = propertyId
+        ? `/verify/packages?propertyId=${encodeURIComponent(propertyId)}`
+        : '/verify/packages';
+      router.replace('/tenant/login?next=' + encodeURIComponent(next));
+      return;
+    }
     if (!propertyId) {
       router.replace('/properties');
     }
@@ -64,7 +79,7 @@ function VerificationPackagesPageContent() {
       return;
     }
     if (!getAccessToken()) {
-      window.location.href = '/login';
+      window.location.href = '/tenant/login';
       return;
     }
     try {
@@ -85,20 +100,21 @@ function VerificationPackagesPageContent() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f3f4f7]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f3f4f7]">
       <SiteNav />
 
-      <div className="mx-auto max-w-6xl px-4 py-10">
+      <div className="mx-auto max-w-6xl px-4 py-6 sm:py-10">
         {!propertyId ? (
           <Card className="mx-auto max-w-2xl">
-            <CardContent className="p-6 text-center">
-              <p className="text-sm text-slate-600">
-                Select a property first to start verification.
-              </p>
-              <Button asChild className="mt-4">
+            <CardHeader>
+              <CardTitle>Select a property</CardTitle>
+              <CardDescription>Select a property first to start verification.</CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button asChild className="w-full">
                 <Link href="/properties">Browse properties</Link>
               </Button>
-            </CardContent>
+            </CardFooter>
           </Card>
         ) : null}
 
@@ -117,52 +133,58 @@ function VerificationPackagesPageContent() {
           </p>
         ) : null}
 
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:gap-5 md:grid-cols-3">
           {packages.map((pkg) => (
-            <Card key={pkg.name}>
-              <CardContent className="p-5">
-                <div className="mb-2 flex items-center justify-between">
-                  <h2 className="text-xl font-semibold text-slate-900">{pkg.name}</h2>
-                  {pkg.featured ? <Badge>Popular</Badge> : null}
-                </div>
+            <Card key={pkg.name} className="overflow-hidden">
+              <CardHeader>
+                {pkg.featured ? (
+                  <CardAction>
+                    <Badge className="shrink-0 px-5 py-2 text-xs font-medium">Popular</Badge>
+                  </CardAction>
+                ) : null}
+                <CardTitle className="text-xl text-slate-900">{pkg.name}</CardTitle>
                 <p className="text-2xl font-semibold tracking-tight text-slate-900">${pkg.price}</p>
-                <p className="mt-2 text-sm text-slate-600">{pkg.description}</p>
-                <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Included</p>
-                <ul className="mt-2 space-y-2 text-sm text-slate-700">
+                <CardDescription className="text-sm text-slate-600">{pkg.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Included</p>
+                <ul className="space-y-2 text-sm text-slate-700">
                   {pkg.bullets.map((b) => (
                     <li key={b}>✓ {b}</li>
                   ))}
                 </ul>
-                <p className="mt-4 text-xs font-semibold uppercase tracking-wide text-slate-500">Not Included</p>
-                <ul className="mt-2 space-y-1 text-sm text-slate-400">
+                <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Not Included</p>
+                <ul className="space-y-1 text-sm text-slate-400">
                   <li>✕ Same-day scheduling</li>
                   <li>✕ Extended property access</li>
                 </ul>
-              {pkg.name === 'Standard' ? (
-                <Button
-                  type="button"
-                  onClick={startStandardCheckout}
-                  disabled={!propertyId}
-                  className="mt-5 w-full"
-                >
-                  Buy Standard (Stripe)
-                </Button>
-              ) : (
-                <Button
-                  type="button"
-                  className="mt-5 w-full"
-                  onClick={() => {
-                    if (!acknowledged) {
-                      setLimitationsOpen(true);
-                      return;
-                    }
-                    router.push(`/verify/payment?propertyId=${propertyId ?? ''}&packageType=${pkg.name.toUpperCase()}`);
-                  }}
-                >
-                  Select {pkg.name}
-                </Button>
-              )}
               </CardContent>
+              <CardFooter>
+                {pkg.name === 'Standard' ? (
+                  <Button
+                    type="button"
+                    onClick={startStandardCheckout}
+                    disabled={!propertyId}
+                    className="min-h-11 w-full touch-manipulation"
+                  >
+                    Buy Standard (Stripe)
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    className="min-h-11 w-full touch-manipulation"
+                    onClick={() => {
+                      if (!acknowledged) {
+                        setLimitationsOpen(true);
+                        return;
+                      }
+                      router.push(`/verify/payment?propertyId=${propertyId ?? ''}&packageType=${pkg.name.toUpperCase()}`);
+                    }}
+                  >
+                    Select {pkg.name}
+                  </Button>
+                )}
+              </CardFooter>
             </Card>
           ))}
         </div>
@@ -173,7 +195,7 @@ function VerificationPackagesPageContent() {
           After Stripe success, open <span className="font-mono">/verify/success</span>; profile updates via webhook.
         </p>
 
-        <div className="mt-6 flex items-center justify-between rounded-lg border border-slate-200 bg-white p-4">
+        <div className="mt-6 flex flex-col gap-4 rounded-lg border border-slate-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-600">
             Please review and accept service limitations before selecting a package.
           </p>
@@ -231,7 +253,7 @@ function VerificationPackagesPageContent() {
 
 function VerificationPackagesFallback() {
   return (
-    <main className="min-h-screen bg-[#f3f4f7]">
+    <main className="min-h-screen overflow-x-hidden bg-[#f3f4f7]">
       <SiteNav />
       <div className="mx-auto max-w-6xl px-4 py-10">
         <p className="text-center text-slate-500">Loading...</p>

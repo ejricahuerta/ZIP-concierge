@@ -174,35 +174,30 @@ model Property {
   videos     String[]
   virtualTour String?
 
-  verified             Boolean   @default(false)
-  verificationReportId String?
-  verificationDate     DateTime?
-
   nearbyUniversities UniversityProximity[]
   amenities          Json?
 
   ownerId String
   owner   User   @relation(fields: [ownerId], references: [id], onDelete: Cascade)
 
-  savedBy   SavedProperty[]
-  viewings  Viewing[]
-  inquiries Inquiry[]
-  bookings  Booking[]
-  verificationReport VerificationReport?
+  savedBy            SavedProperty[]
+  viewings           Viewing[]
+  inquiries          Inquiry[]
+  bookings           Booking[]
+  verificationReports VerificationReport[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([city])
   @@index([type])
-  @@index([verified])
   @@index([latitude, longitude])
   @@index([ownerId])
 }
 
 model VerificationReport {
   id          String               @id @default(cuid())
-  propertyId  String               @unique
+  propertyId  String
   bookingId   String?              @unique
   packageType VerificationPackage
   status      VerificationStatus   @default(PENDING)
@@ -217,11 +212,13 @@ model VerificationReport {
   completedDate  DateTime?
   reportUrl      String?
 
-  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  property Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  booking  Booking?  @relation(fields: [bookingId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([propertyId])
 }
 
 model SavedProperty {
