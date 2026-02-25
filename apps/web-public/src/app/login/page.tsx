@@ -1,4 +1,4 @@
-import { redirect } from 'next/server';
+import { redirect } from 'next/navigation';
 
 /** Default login is tenant; redirect to tenant login (no role chooser). */
 export default function LoginPage({

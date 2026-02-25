@@ -105,7 +105,7 @@ const initialForm: FormState = {
   size: '',
   bedrooms: '',
   bathrooms: '',
-  maxOccupants: '1',
+  maxOccupants: 1,
   price: '',
   currency: 'CAD',
   utilitiesIncluded: false,
