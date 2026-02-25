@@ -24,6 +24,8 @@ After deploy, the API base URL is `https://<your-project>.vercel.app/api/v1`. Po
 
 If the frontend gets **404** from the API: (1) Set the web app’s `NEXT_PUBLIC_API_URL` in Vercel to `https://<api-project>.vercel.app/api/v1` (no trailing slash). (2) Set the API’s `CORS_ORIGIN` to include the web app origin (e.g. `https://your-web.vercel.app`).
 
+**CORS / “blocked by CORS policy”**: Set the API project’s `CORS_ORIGIN` in Vercel to the exact web app origin (e.g. `https://zip-concierge-web-public-dev.vercel.app`). For multiple frontends use a comma-separated list. On Vercel preview deployments, if `CORS_ORIGIN` is not set, the API allows the request origin so previews can work without configuring env.
+
 ## Deploy as a traditional server (Railway, Render, etc.)
 
 Use `npm run build` then `npm run start`. No `vercel.json` or `api/` folder is used.

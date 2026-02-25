@@ -12,8 +12,12 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
+  // CORS first – origin from env (comma-separated list)
+  const corsOrigins = process.env.CORS_ORIGIN?.split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',') ?? ['http://localhost:3000'],
+    origin: corsOrigins?.length ? corsOrigins : ['http://localhost:3000'],
     credentials: true,
   });
   const port = process.env.PORT ?? 4000;

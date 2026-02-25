@@ -4,6 +4,7 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'ZIP Concierge – Verified Rentals for International Students',
   description: 'See it before you sign. Verified rental marketplace in Toronto.',
+  icons: { icon: '/icon' },
 };
 
 export default function RootLayout({
