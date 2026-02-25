@@ -19,10 +19,9 @@ async function createApp(): Promise<INestApplication> {
       forbidNonWhitelisted: true,
     }),
   );
+  // CORS first – same origin list as preflight handler (env)
   app.enableCors({
-    origin: process.env.CORS_ORIGIN?.split(',').map((o) => o.trim()) ?? [
-      'http://localhost:3000',
-    ],
+    origin: getCorsOrigins(),
     credentials: true,
   });
 
@@ -59,6 +58,33 @@ function ensureApiPath(req: Request): void {
   }
 }
 
+/** Allowed CORS origins from env (comma-separated). Used for preflight and Nest. */
+function getCorsOrigins(): string[] {
+  const list = process.env.CORS_ORIGIN?.split(',')
+    .map((o) => o.trim())
+    .filter(Boolean);
+  return list?.length ? list : ['http://localhost:3000'];
+}
+
+/**
+ * Handle CORS preflight (OPTIONS) before any path rewriting or routing.
+ * Ensures the browser gets CORS headers even if something else would redirect or fail.
+ */
+function handleCorsPreflight(req: Request, res: Response): boolean {
+  if (req.method !== 'OPTIONS') return false;
+  const origins = getCorsOrigins();
+  const origin = req.headers.origin as string | undefined;
+  const allowOrigin = origin && origins.includes(origin) ? origin : origins[0];
+  res.setHeader('Access-Control-Allow-Origin', allowOrigin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', req.headers['access-control-request-headers'] ?? '*');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.statusCode = 204;
+  res.end();
+  return true;
+}
+
 /**
  * Vercel serverless handler: forwards (req, res) to the Nest/Express app.
  * The Nest app is created once and reused (warm invocations).
@@ -67,6 +93,9 @@ function ensureApiPath(req: Request): void {
  */
 export default async function handler(req: Request, res: Response): Promise<void> {
   try {
+    // CORS preflight first – before any redirects or path rewriting
+    if (handleCorsPreflight(req, res)) return;
+
     ensureApiPath(req);
     const app = await createApp();
     const expressApp = app.getHttpAdapter().getInstance();
