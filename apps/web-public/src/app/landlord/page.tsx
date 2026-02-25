@@ -14,7 +14,14 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SiteNav } from '@/components/site-nav';
@@ -217,26 +224,26 @@ export default function LandlordPage() {
                 <Card
                   key={item.title}
                   id={isFirst ? 'property-assessment' : undefined}
-                  className={`overflow-hidden rounded-2xl border-slate-200 shadow-sm transition-shadow hover:shadow-md ${isFirst ? 'scroll-mt-8' : ''}`}
+                  className={`relative overflow-hidden rounded-2xl border-slate-200 pt-0 shadow-sm transition-shadow hover:shadow-md ${isFirst ? 'scroll-mt-8' : ''}`}
                 >
                   <div
                     className={`flex flex-col md:flex-row ${imageLeft ? '' : 'md:flex-row-reverse'}`}
                   >
-                    <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden bg-slate-100 md:aspect-auto md:min-h-[240px] md:w-2/5">
+                    <div className="relative aspect-video w-full shrink-0 overflow-hidden bg-slate-100 md:aspect-[16/10] md:min-h-[240px] md:w-2/5">
+                      <div className="absolute inset-0 z-30 bg-black/35" aria-hidden />
                       <img
                         src={item.image}
                         alt={item.imageAlt}
-                        className="h-full w-full object-cover"
+                        className="relative z-20 h-full w-full object-cover brightness-60 dark:brightness-40"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                     </div>
                     <div className="flex flex-1 flex-col justify-center p-6 md:p-8">
                       <CardHeader className="space-y-3 p-0 pb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
-                            <Icon className="h-4 w-4" aria-hidden />
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                            <Icon className="h-5 w-5" aria-hidden />
                           </span>
-                          <CardTitle className="text-xl">{item.title}</CardTitle>
+                          <CardTitle className="text-xl leading-tight">{item.title}</CardTitle>
                         </div>
                         <CardDescription className="text-base leading-relaxed text-slate-700">
                           {item.description}
@@ -246,12 +253,14 @@ export default function LandlordPage() {
                             {(item as { tagline: string }).tagline}
                           </p>
                         )}
-                        {cta && (
-                          <Button asChild size="sm" className="mt-2 w-fit">
+                      </CardHeader>
+                      {cta && (
+                        <CardFooter className="p-0 pt-2">
+                          <Button asChild size="sm" className="w-fit">
                             <Link href={DASHBOARD_URL}>{cta}</Link>
                           </Button>
-                        )}
-                      </CardHeader>
+                        </CardFooter>
+                      )}
                     </div>
                   </div>
                 </Card>
@@ -274,15 +283,15 @@ export default function LandlordPage() {
               return (
                 <Fragment key={step.num}>
                   <div className="flex w-full max-w-sm flex-1 flex-col md:max-w-none">
-                    <Card className="flex h-full flex-col overflow-hidden rounded-2xl border-slate-200 shadow-sm transition-shadow hover:shadow-md">
+                    <Card className="relative flex h-full flex-col overflow-hidden rounded-2xl border-slate-200 pt-0 shadow-sm transition-shadow hover:shadow-md">
                       <div className="relative h-40 w-full overflow-hidden bg-slate-100">
+                        <div className="absolute inset-0 z-30 bg-black/35" aria-hidden />
                         <img
                           src={step.image}
                           alt={step.imageAlt}
-                          className="h-full w-full object-cover"
+                          className="relative z-20 h-full w-full object-cover brightness-60 dark:brightness-40"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/70 via-slate-900/20 to-transparent" />
-                        <div className="absolute bottom-3 left-4 flex items-center gap-2">
+                        <div className="absolute bottom-3 left-4 z-40 flex items-center gap-2">
                           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-md">
                             {step.num}
                           </span>
@@ -290,19 +299,19 @@ export default function LandlordPage() {
                             {step.title}
                           </span>
                         </div>
-                        <div className="absolute right-4 top-4 flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/30 bg-white/10 text-white backdrop-blur-sm">
+                        <div className="absolute right-4 top-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/30 bg-white/10 text-white backdrop-blur-sm">
                           <Icon className="h-5 w-5" strokeWidth={2} aria-hidden />
                         </div>
                       </div>
-                      <CardContent className="flex flex-1 flex-col p-5">
-                        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <CardHeader className="flex flex-1 flex-col gap-3 p-5">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                           <Icon className="h-6 w-6" strokeWidth={2} aria-hidden />
                         </div>
-                        <h3 className="text-lg font-semibold tracking-tight text-slate-900">
+                        <CardTitle className="text-lg font-semibold leading-tight tracking-tight text-slate-900">
                           {step.title}
-                        </h3>
-                        <p className="mt-2 flex-1 text-sm text-slate-700">{step.desc}</p>
-                      </CardContent>
+                        </CardTitle>
+                        <CardDescription className="text-sm text-slate-700">{step.desc}</CardDescription>
+                      </CardHeader>
                     </Card>
                     {/* Mobile: down arrow between stacked steps */}
                     {index < STEPS.length - 1 && (
@@ -401,7 +410,11 @@ export default function LandlordPage() {
               </p>
             </div>
             <Card className="border-slate-700 bg-slate-800">
-              <CardContent className="p-6">
+              <CardHeader>
+                <CardTitle className="text-lg text-white">Get updates</CardTitle>
+                <CardDescription className="text-slate-300">Updates for landlords and property owners.</CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 pt-0">
                 <form
                   className="space-y-4"
                   noValidate

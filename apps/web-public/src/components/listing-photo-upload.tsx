@@ -5,6 +5,7 @@ import { getSupabase, PROPERTY_FILES_BUCKET } from '@/lib/supabase';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { ImagePlus, Loader2, Trash2 } from 'lucide-react';
+import { ensureImageUrl } from '@/lib/utils';
 
 const MAX_IMAGES = 15;
 const MAX_FILE_MB = 5;
@@ -69,7 +70,12 @@ export function ListingPhotoUpload({
       if (uploadError) throw new Error(uploadError.message);
       onImagesChange([...images, publicUrl]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      const msg = err instanceof Error ? err.message : 'Upload failed';
+      const isAuthError =
+        msg === 'Authentication required' ||
+        msg.toLowerCase().includes('unauthorized') ||
+        msg.toLowerCase().includes('sign in');
+      setError(isAuthError ? 'Please sign in to add photos.' : msg);
     } finally {
       setUploading(false);
     }
@@ -115,9 +121,9 @@ export function ListingPhotoUpload({
       {images.length > 0 ? (
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
           {images.map((url, i) => (
-            <li key={`${url}-${i}`} className="relative aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
+                <li key={`${url}-${i}`} className="relative aspect-[4/3] overflow-hidden rounded-lg border border-slate-200 bg-slate-100">
               <img
-                src={url}
+                src={ensureImageUrl(url)}
                 alt=""
                 className="h-full w-full object-cover"
               />

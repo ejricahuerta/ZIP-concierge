@@ -7,7 +7,23 @@ import { apiFetch, API_URL } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { SiteFooter } from '@/components/site-footer';
@@ -18,7 +34,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { cn } from '@/lib/utils';
+import { cn, ensureImageUrl } from '@/lib/utils';
+import { Building2 } from 'lucide-react';
 
 type Property = {
   id: string;
@@ -72,18 +89,24 @@ export default function PropertiesPage() {
   }, []);
 
   useEffect(() => {
+    const ac = new AbortController();
     setLoading(true);
     const query = new URLSearchParams();
     query.set('limit', '50');
     if (city && city !== 'ALL_CITIES') query.set('city', city);
     if (type !== DEFAULT_TYPE) query.set('type', type);
-    fetch(`${API_URL}/properties?${query.toString()}`)
+    fetch(`${API_URL}/properties?${query.toString()}`, { signal: ac.signal })
       .then((res) => res.json())
       .then((json) => {
+        if (ac.signal.aborted) return;
         if (json.success && json.data) setList(json.data);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((err) => {
+        if (err?.name === 'AbortError' || ac.signal.aborted) return;
+        setLoading(false);
+      });
+    return () => ac.abort();
   }, [city, type]);
 
   const minPriceValue = parsePriceFilter(minPrice);
@@ -167,7 +190,11 @@ export default function PropertiesPage() {
         <p className="mt-1 text-sm text-slate-700 sm:text-base">Browse all listings and verify on demand.</p>
 
         <Card className="mt-4 sm:mt-5">
-          <CardContent className="grid grid-cols-1 gap-4 p-4 sm:gap-5 md:grid-cols-2 lg:grid-cols-6">
+          <CardHeader className="sr-only">
+            <CardTitle>Filters</CardTitle>
+            <CardDescription>Filter properties by location, type, price, and sort order</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 gap-4 p-4 pt-0 sm:gap-5 md:grid-cols-2 lg:grid-cols-6">
             <div className="space-y-1.5">
               <Label htmlFor="properties-city" className="text-xs uppercase tracking-wide text-slate-500">
                 Location
@@ -277,34 +304,71 @@ export default function PropertiesPage() {
         {loading ? (
           <p className="mt-8 text-slate-500">Loading…</p>
         ) : visibleProperties.length === 0 ? (
-          <p className="mt-8 text-slate-500">
-            {hasActiveFilters
-              ? 'No properties match your filters. Try adjusting your criteria.'
-              : 'No properties yet. Run the API and add seed data.'}
-          </p>
+          <Empty className="mt-8 rounded-xl border border-dashed">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <Building2 className="h-8 w-8 text-muted-foreground" aria-hidden />
+              </EmptyMedia>
+              <EmptyTitle>
+                {hasActiveFilters ? 'No properties match your filters' : 'No properties yet'}
+              </EmptyTitle>
+              <EmptyDescription>
+                {hasActiveFilters
+                  ? 'Try adjusting your criteria or clear filters to see more listings.'
+                  : 'Run the API and add seed data, or check back later for new listings.'}
+              </EmptyDescription>
+            </EmptyHeader>
+            <EmptyContent>
+              {hasActiveFilters ? (
+                <Button type="button" variant="outline" onClick={clearFilters} className="min-h-11">
+                  Clear filters
+                </Button>
+              ) : (
+                <Button asChild className="min-h-11">
+                  <Link href="/properties">Browse properties</Link>
+                </Button>
+              )}
+            </EmptyContent>
+          </Empty>
         ) : (
           <ul className="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {visibleProperties.map((property) => (
-              <li key={property.id}>
-                <Card className="flex h-full flex-col overflow-hidden transition hover:shadow-md">
-                  <Link href={`/properties/${property.id}`} className="block">
-                    <div className="aspect-[4/3] bg-slate-200">
-                      {property.images?.[0] ? (
-                        <img src={property.images[0]} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-slate-400">
-                          No image
-                        </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="text-base font-semibold tracking-tight text-slate-900">{property.title}</span>
-                        <Badge variant="secondary">{property.type}</Badge>
+              <li key={property.id} className="relative">
+                <Card
+                  className={cn(
+                    'relative flex h-full flex-col overflow-hidden pt-0 transition hover:shadow-md',
+                    !isAuthed && 'pointer-events-none select-none'
+                  )}
+                >
+                  <div className={cn(!isAuthed && 'blur-md')}>
+                    <Link href={`/properties/${property.id}`} className="relative z-20 block">
+                      <div className="relative aspect-[4/3] bg-slate-200">
+                        <div className="absolute inset-0 z-30 bg-black/35" aria-hidden />
+                        {property.images?.[0] ? (
+                          <img
+                            src={ensureImageUrl(property.images[0])}
+                            alt=""
+                            className="relative z-20 h-full w-full object-cover brightness-60 dark:brightness-40"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-slate-400">
+                            No image
+                          </div>
+                        )}
                       </div>
-                      <p className="mt-1 text-sm text-slate-600">
+                    </Link>
+                    <CardHeader className="flex-1">
+                      <CardAction>
+                        <Badge variant="secondary">{property.type}</Badge>
+                      </CardAction>
+                      <CardTitle className="text-xl">
+                        <Link href={`/properties/${property.id}`} className="hover:underline">
+                          {property.title}
+                        </Link>
+                      </CardTitle>
+                      <CardDescription className="text-base leading-relaxed text-slate-700">
                         {property.city} · {property.bedrooms} bed
-                      </p>
+                      </CardDescription>
                       <p className="mt-2 font-medium text-zip-primary">
                         ${property.price}
                         <span className="text-slate-500">/mo</span>
@@ -312,28 +376,39 @@ export default function PropertiesPage() {
                       {(!currentUserId || property.owner?.id !== currentUserId) && (
                         <p className="mt-1 text-xs text-slate-500">Verification starts at $149</p>
                       )}
-                    </div>
-                  </Link>
-                  <CardFooter className="mt-auto flex flex-col gap-2 p-4 pt-0 sm:flex-row sm:justify-end">
-                    {(!currentUserId || property.owner?.id !== currentUserId) && (
-                      <Button asChild size="sm" className="min-h-11 w-full touch-manipulation sm:w-auto">
-                        <Link href={`/verify/packages?propertyId=${property.id}`}>
-                          Verify
-                        </Link>
+                    </CardHeader>
+                    <CardFooter className="mt-auto flex flex-col gap-2 sm:flex-row sm:justify-end">
+                      {(!currentUserId || property.owner?.id !== currentUserId) && (
+                        <Button asChild size="sm" className="min-h-11 w-full touch-manipulation sm:w-auto">
+                          <Link href={`/verify/packages?propertyId=${property.id}`}>
+                            View property
+                          </Link>
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        variant={savedIds.includes(property.id) ? 'secondary' : 'outline'}
+                        size="sm"
+                        disabled={!isAuthed}
+                        onClick={() => toggleSaved(property.id)}
+                        className={cn('min-h-11 touch-manipulation', !isAuthed ? 'cursor-not-allowed' : 'w-full sm:w-auto')}
+                      >
+                        {savedIds.includes(property.id) ? 'Saved' : 'Save'}
                       </Button>
-                    )}
-                    <Button
-                      type="button"
-                      variant={savedIds.includes(property.id) ? 'secondary' : 'outline'}
-                      size="sm"
-                      disabled={!isAuthed}
-                      onClick={() => toggleSaved(property.id)}
-                      className={cn('min-h-11 touch-manipulation', !isAuthed ? 'cursor-not-allowed' : 'w-full sm:w-auto')}
-                    >
-                      {savedIds.includes(property.id) ? 'Saved' : 'Save'}
-                    </Button>
-                  </CardFooter>
+                    </CardFooter>
+                  </div>
                 </Card>
+                {!isAuthed && (
+                  <div
+                    className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 rounded-lg border border-slate-200 bg-slate-50/95 p-4 backdrop-blur-sm"
+                    aria-hidden="false"
+                  >
+                    <p className="text-center text-sm font-medium text-slate-700">Sign in to view listings</p>
+                    <Button asChild size="sm" className="min-h-11 touch-manipulation">
+                      <Link href={`/tenant/login?next=${encodeURIComponent('/properties')}`}>Log in</Link>
+                    </Button>
+                  </div>
+                )}
               </li>
             ))}
           </ul>

@@ -5,8 +5,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAccessToken } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
-import { SiteNav } from '@/components/site-nav';
-import { SiteFooter } from '@/components/site-footer';
+import { DashboardLayout } from '@/components/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -130,7 +129,7 @@ export default function NewListingPage() {
 
   useEffect(() => {
     const token = getAccessToken();
-    if (!token) router.replace('/login?next=/landlord/listings/new');
+    if (!token) router.replace('/landlord/login?next=/landlord/listings/new');
   }, [router]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -212,19 +211,11 @@ export default function NewListingPage() {
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#f4f4f5] text-slate-900">
-      <SiteNav />
-      <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6 flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/landlord/dashboard" aria-label="Back to dashboard">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">Add listing</h1>
-            <p className="text-sm text-slate-600">Add your property to start receiving inquiries</p>
-          </div>
+    <DashboardLayout variant="landlord" breadcrumb={[{ label: 'Landlord', href: '/landlord/dashboard' }, { label: 'Add listing' }]}>
+      <div className="mx-auto max-w-2xl">
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold tracking-tight">Add listing</h1>
+          <p className="text-sm text-slate-600">Add your property to start receiving inquiries</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-6">
@@ -549,7 +540,6 @@ export default function NewListingPage() {
           </div>
         </form>
       </div>
-      <SiteFooter />
-    </main>
+    </DashboardLayout>
   );
 }

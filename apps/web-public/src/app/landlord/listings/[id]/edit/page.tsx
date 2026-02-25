@@ -5,8 +5,7 @@ import { FormEvent, useEffect, useState } from 'react';
 import { useParams, usePathname, useRouter } from 'next/navigation';
 import { getAccessToken } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
-import { SiteNav } from '@/components/site-nav';
-import { SiteFooter } from '@/components/site-footer';
+import { DashboardLayout } from '@/components/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -159,6 +158,7 @@ export default function EditListingPage() {
   const [form, setForm] = useState<FormState | null>(null);
   const [images, setImages] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const [submitError, setSubmitError] = useState('');
 
@@ -167,18 +167,28 @@ export default function EditListingPage() {
   useEffect(() => {
     const token = getAccessToken();
     if (!token || !id) {
-      if (!token) router.replace('/login?next=' + encodeURIComponent(pathname ?? '/landlord/dashboard'));
+      if (!token) router.replace('/landlord/login?next=' + encodeURIComponent(pathname ?? '/landlord/dashboard'));
+      else setInitialLoading(false);
       return;
     }
-    apiFetch<{ success: true; data: PropertyDetail }>(`/properties/${id}`)
+    const ac = new AbortController();
+    setInitialLoading(true);
+    setLoadError('');
+    apiFetch<{ success: true; data: PropertyDetail }>(`/properties/${id}`, { signal: ac.signal })
       .then((res) => {
+        if (ac.signal.aborted) return;
         setProperty(res.data);
         setForm(propertyToForm(res.data));
         setImages(res.data.images ?? []);
       })
       .catch((err) => {
+        if (ac.signal.aborted) return;
         setLoadError(err instanceof Error ? err.message : 'Failed to load listing');
+      })
+      .finally(() => {
+        if (!ac.signal.aborted) setInitialLoading(false);
       });
+    return () => ac.abort();
   }, [id, router, pathname]);
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
@@ -260,11 +270,27 @@ export default function EditListingPage() {
     }
   }
 
+  const editBreadcrumb = [
+    { label: 'Landlord', href: '/landlord/dashboard' },
+    { label: 'Listings', href: '/landlord/dashboard' },
+    { label: 'Edit listing' },
+  ];
+
+  if (initialLoading) {
+    return (
+      <DashboardLayout variant="landlord" breadcrumb={[{ label: 'Landlord' }, { label: 'Edit listing' }]}>
+        <div className="flex flex-col items-center justify-center gap-4 py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-slate-400" aria-hidden />
+          <p className="text-sm text-slate-600">Loading listing…</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   if (loadError || (!property && !form && id)) {
     return (
-      <main className="min-h-screen bg-[#f4f4f5]">
-        <SiteNav />
-        <div className="mx-auto max-w-2xl px-4 py-12">
+      <DashboardLayout variant="landlord" breadcrumb={[{ label: 'Landlord' }, { label: 'Edit listing' }]}>
+        <div className="mx-auto max-w-2xl">
           <Card className="border-red-200 bg-red-50">
             <CardContent className="pt-6">
               <p className="text-red-800">{loadError || 'Listing not found.'}</p>
@@ -274,37 +300,26 @@ export default function EditListingPage() {
             </CardContent>
           </Card>
         </div>
-        <SiteFooter />
-      </main>
+      </DashboardLayout>
     );
   }
 
   if (!form) {
     return (
-      <main className="min-h-screen bg-[#f4f4f5]">
-        <SiteNav />
-        <div className="mx-auto flex max-w-2xl items-center justify-center px-4 py-24">
+      <DashboardLayout variant="landlord" breadcrumb={[{ label: 'Landlord' }, { label: 'Edit listing' }]}>
+        <div className="flex items-center justify-center py-24">
           <Loader2 className="h-8 w-8 animate-spin text-slate-400" aria-hidden />
         </div>
-        <SiteFooter />
-      </main>
+      </DashboardLayout>
     );
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#f4f4f5] text-slate-900">
-      <SiteNav />
-      <div className="mx-auto max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
-        <div className="mb-6 flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/landlord/dashboard" aria-label="Back to dashboard">
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">Edit listing</h1>
-            <p className="text-sm text-slate-600">Update details and photos</p>
-          </div>
+    <DashboardLayout variant="landlord" breadcrumb={editBreadcrumb}>
+      <div className="mx-auto max-w-2xl">
+        <div className="mb-6">
+          <h1 className="text-xl font-semibold tracking-tight">Edit listing</h1>
+          <p className="text-sm text-slate-600">Update details and photos</p>
         </div>
 
         <form onSubmit={onSubmit} className="space-y-6">
@@ -628,7 +643,6 @@ export default function EditListingPage() {
           </div>
         </form>
       </div>
-      <SiteFooter />
-    </main>
+    </DashboardLayout>
   );
 }

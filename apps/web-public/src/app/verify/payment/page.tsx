@@ -6,7 +6,14 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { apiFetch } from '@/lib/api';
 import { getAccessToken } from '@/lib/auth';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteNav } from '@/components/site-nav';
 
@@ -28,7 +35,7 @@ function VerificationPaymentPageContent() {
   useEffect(() => {
     if (!token) {
       const search = typeof window !== 'undefined' ? window.location.search : '';
-      router.replace('/login?next=' + encodeURIComponent(pathname + search));
+      router.replace('/tenant/login?next=' + encodeURIComponent(pathname + search));
       return;
     }
     if (!propertyId) {
@@ -57,14 +64,15 @@ function VerificationPaymentPageContent() {
       <div className="mx-auto max-w-2xl px-4 py-8 sm:py-12">
         {!propertyId ? (
           <Card className="mx-auto max-w-2xl">
-            <CardContent className="p-6 text-center">
-              <p className="text-sm text-slate-600">
-                Select a property first to continue with payment.
-              </p>
-              <Button asChild className="mt-4">
+            <CardHeader>
+              <CardTitle>Select a property</CardTitle>
+              <CardDescription>Select a property first to continue with payment.</CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button asChild className="w-full">
                 <Link href="/properties">Browse properties</Link>
               </Button>
-            </CardContent>
+            </CardFooter>
           </Card>
         ) : null}
 
@@ -81,6 +89,7 @@ function VerificationPaymentPageContent() {
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Order summary</CardTitle>
+            <CardDescription>Complete payment to place your verification request.</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-slate-500">Property ID</p>
@@ -97,7 +106,7 @@ function VerificationPaymentPageContent() {
             Please sign in before making payment.
             <div className="mt-3">
               <Button asChild size="sm">
-                <Link href="/login">Go to Login</Link>
+                <Link href="/tenant/login">Go to Login</Link>
               </Button>
             </div>
           </div>

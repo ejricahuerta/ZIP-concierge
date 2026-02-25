@@ -1,6 +1,8 @@
 import {
+  BadGatewayException,
   Controller,
   Get,
+  Logger,
   Post,
   Patch,
   Body,
@@ -22,6 +24,8 @@ import { randomUUID } from 'crypto';
 
 @Controller('properties')
 export class PropertiesController {
+  private readonly logger = new Logger(PropertiesController.name);
+
   constructor(
     private readonly propertiesService: PropertiesService,
     private readonly supabase: SupabaseService,
@@ -88,13 +92,21 @@ export class PropertiesController {
     const property = await this.propertiesService.findOne(id);
     if (!property) return { success: false, error: 'Not found' };
     if (property.owner.id !== user.id) return { success: false, error: 'Forbidden' };
-    const ext = dto.filename.replace(/^.*\./, '').toLowerCase();
+    const ext = dto.filename.replace(/^.*\./, '').toLowerCase() || 'bin';
     const path = `${id}/${randomUUID()}.${ext}`;
-    const { path: storedPath, token } = await this.supabase.createSignedUploadUrl(path);
-    const publicUrl = this.supabase.getPublicUrl(storedPath);
-    return {
-      success: true,
-      data: { path: storedPath, token, publicUrl },
-    };
+    try {
+      const { path: storedPath, token } = await this.supabase.createSignedUploadUrl(path);
+      const publicUrl = this.supabase.getPublicUrl(storedPath);
+      return {
+        success: true,
+        data: { path: storedPath, token, publicUrl },
+      };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Storage configuration error';
+      this.logger.warn(`upload-url failed: ${message}`, err instanceof Error ? err.stack : undefined);
+      throw new BadGatewayException(
+        process.env.NODE_ENV === 'production' ? 'Upload URL unavailable' : message,
+      );
+    }
   }
 }

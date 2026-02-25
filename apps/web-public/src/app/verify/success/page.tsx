@@ -6,7 +6,14 @@ import { useRouter } from 'next/navigation';
 import { getAccessToken } from '@/lib/auth';
 import { apiFetch } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteNav } from '@/components/site-nav';
 
@@ -18,7 +25,7 @@ export default function VerificationSuccessPage() {
   useEffect(() => {
     const token = getAccessToken();
     if (!token) {
-      router.replace('/login?next=' + encodeURIComponent('/verify/success'));
+      router.replace('/tenant/login?next=' + encodeURIComponent('/verify/success'));
       return;
     }
 
@@ -51,24 +58,27 @@ export default function VerificationSuccessPage() {
         <Card className="mt-6">
           <CardHeader>
             <CardTitle>Status</CardTitle>
+            <CardDescription>
+              {status === 'processing' ? 'Checking your payment status...' : 'Payment result'}
+            </CardDescription>
           </CardHeader>
           <CardContent>
-          {status === 'processing' ? (
-            <p className="text-sm text-slate-600">Checking your payment status...</p>
-          ) : (
-            <p className={`text-sm ${status === 'success' ? 'text-emerald-700' : 'text-red-600'}`}>
-              {message}
-            </p>
-          )}
-          <div className="mt-5 flex gap-3">
+            {status === 'processing' ? (
+              <p className="text-sm text-slate-600">Checking your payment status...</p>
+            ) : (
+              <p className={`text-sm ${status === 'success' ? 'text-emerald-700' : 'text-red-600'}`}>
+                {message}
+              </p>
+            )}
+          </CardContent>
+          <CardFooter className="flex gap-3">
             <Button asChild>
               <Link href="/profile?tab=verifications">Go to Profile</Link>
             </Button>
             <Button asChild variant="secondary">
               <Link href="/properties">Browse Properties</Link>
             </Button>
-          </div>
-          </CardContent>
+          </CardFooter>
         </Card>
       </div>
       <SiteFooter />

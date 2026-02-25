@@ -11,7 +11,8 @@ export async function apiFetch<T>(
   headers.set('Content-Type', 'application/json');
   if (includeAuth) {
     const token = getAccessToken();
-    if (token) headers.set('Authorization', `Bearer ${token}`);
+    if (!token) throw new Error('Authentication required');
+    headers.set('Authorization', `Bearer ${token}`);
   }
   const res = await fetch(`${API_URL}${path}`, {
     ...init,
@@ -19,7 +20,12 @@ export async function apiFetch<T>(
   });
   const json = await res.json();
   if (!res.ok || (json && json.success === false)) {
-    throw new Error(json?.error?.message ?? json?.error ?? 'Request failed');
+    const message = json?.error?.message ?? json?.error ?? json?.message ?? 'Request failed';
+    const err = new Error(typeof message === 'string' ? message : 'Request failed') as Error & {
+      status?: number;
+    };
+    err.status = res.status;
+    throw err;
   }
   return json as T;
 }
