@@ -1,554 +1,363 @@
 'use client';
 
-import { type FormEvent, Fragment, useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useRef } from 'react';
 import {
-  ArrowRight,
-  Building2,
-  CalendarCheck,
+  AlertTriangle,
+  Briefcase,
+  Camera,
   ChevronDown,
-  ChevronRight,
-  ClipboardCheck,
-  Search,
-  ShieldCheck,
+  ClipboardList,
+  FileText,
+  Globe,
+  GraduationCap,
+  Users,
 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { SiteNav } from '@/components/site-nav';
-import { SiteFooter } from '@/components/site-footer';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { AUTH_CHANGED_EVENT, clearAccessToken, getAccessToken } from '@/lib/auth';
-import { apiFetch } from '@/lib/api';
+import './landing.css';
+import { LandingNav } from '@/components/landing-nav';
+import { LandingFooter } from '@/components/landing-footer';
 
-type MeResponse = {
-  success: true;
-  data: { user: { id: string; role?: string } };
-};
+const MAILTO = 'mailto:info@ziphvs.com';
+const MAILTO_SUBJECT = 'mailto:info@ziphvs.com?subject=Verification%20Request';
 
-/** Verification packages from BUSINESS_ANALYSIS.md */
-const VERIFICATION_PACKAGES = [
-  { name: 'Standard', price: 149, description: 'Essential verification for basic due diligence.', features: ['Exterior + interior photo set (15+)', 'On-site verification checklist', 'Landlord identity confirmation', 'Report delivery within 48 hours'], cta: 'Choose Standard', highlighted: false },
-  { name: 'Comprehensive', price: 249, description: 'Detailed documentation with video and utility verification.', features: ['Expanded photo set with annotations (30+)', 'Walkthrough video (5 minutes)', '360° camera walkthrough views', 'Full verification checklist with notes', 'Utility functionality verification', 'Report delivery within 24 hours'], cta: 'Choose Comprehensive', highlighted: true },
-  { name: 'Premium', price: 399, description: 'Priority scheduling with comprehensive documentation.', features: ['Comprehensive photo set with annotations (50+)', 'Detailed walkthrough video (10 minutes)', 'Interactive 360° walkthrough', 'Utility + appliance functionality checks', 'Landlord interview summary', 'Same-day report delivery', 'Priority scheduling (within 24 hours)'], cta: 'Choose Premium', highlighted: false },
+/** Grain overlay – tiled SVG noise (same as HTML reference) */
+function GrainOverlay() {
+  return <div className="landing-grain" aria-hidden />;
+}
+
+const RISKS = [
+  {
+    icon: AlertTriangle,
+    title: 'Rental Fraud Is Rising',
+    desc: 'Scammers post photos of properties they don\'t own. Fake landlords collect first and last month\'s rent, then vanish — no recourse, no refund.',
+  },
+  {
+    icon: Camera,
+    title: 'Listings Are Designed to Mislead',
+    desc: 'Wide-angle lenses make small rooms look spacious. Edited photos hide mould, water damage, and worn fixtures. You only find out on move-in day.',
+  },
+  {
+    icon: FileText,
+    title: 'Leases Contain Traps',
+    desc: 'Non-standard clauses and illegal terms go unnoticed when you\'re reviewing remotely, under time pressure, in an unfamiliar legal system.',
+  },
+  {
+    icon: Globe,
+    title: 'No Way to Verify Remotely',
+    desc: 'You cannot smell the hallway, speak to a neighbour, or feel the neighbourhood at 11pm. You are making a $4,000/month decision blind.',
+  },
 ] as const;
 
-/** Service cards for "Our services" – single grid, image left/right alternate */
-const SERVICE_ITEMS = [
-  {
-    title: 'Marketplace for renters',
-    description:
-      'Browse listings for free. Filter by city, type, and price. Save properties and see which are verified. No payment until you\'re ready.',
-    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800&auto=format&fit=crop',
-    imageAlt: 'Person browsing property listings on laptop',
-    href: '/properties',
-    cta: 'Browse properties',
-    icon: Search,
-    isPrimary: false,
-  },
-  {
-    title: 'Property verification',
-    description:
-      "Can't visit in person? Book an on-site verification. A local operator documents the property and delivers a report with photos, video, and checklist.",
-    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop',
-    imageAlt: 'Property inspection and documentation',
-    href: '#services',
-    cta: 'View packages',
-    icon: ClipboardCheck,
-    isPrimary: true,
-  },
-  {
-    title: 'Trust & transparency',
-    description:
-      'Verification badges on listings, real documentation (photos, video, 360°), and landlord identity confirmation to reduce scam risk.',
-    image: 'https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?q=80&w=800&auto=format&fit=crop',
-    imageAlt: 'Keys and trust in rental',
-    href: '/properties',
-    cta: 'See verified listings',
-    icon: ShieldCheck,
-    isPrimary: false,
-  },
-  {
-    title: 'For property owners',
-    description:
-      'List your property, reach remote and international renters, and get verification badges. Manage listings, analytics, and inquiries in one place.',
-    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800&auto=format&fit=crop',
-    imageAlt: 'Property owner dashboard',
-    href: '/landlord',
-    cta: 'List your property',
-    icon: Building2,
-    isPrimary: false,
-  },
+const DELIVERABLES = [
+  { num: '01', title: 'Private Scheduled Viewing', desc: 'We attend on your behalf at a dedicated time. No group viewings. No rushed walkthroughs. Your exclusive 45–60 minute session.' },
+  { num: '02', title: 'Live Zoom Walkthrough', desc: 'Join in real time and direct every step. Ask questions as we move through each room — or receive the full 4K recorded tour on your schedule.' },
+  { num: '03', title: 'Deep In-Unit Inspection', desc: 'Moisture checks, damage assessment, appliance condition, smell, light, storage. We look at everything a staged listing is designed to hide.' },
+  { num: '04', title: 'Building Common Areas Review', desc: 'Lobby, laundry, parking, mailroom, hallways. The condition of shared spaces tells you everything about how the building is actually managed.' },
+  { num: '05', title: 'Neighbourhood Walk Video', desc: 'We walk the immediate area — transit stops, groceries, street safety, noise levels. The real version, not the marketing version.' },
+  { num: '06', title: 'Honest Assessment + Lease Scan', desc: 'Would we rent this? We tell you plainly. Plus a review of your lease for unusual or red-flag clauses — not legal advice, but an honest second opinion.' },
+] as const;
+
+const CLIENTS = [
+  { icon: GraduationCap, name: 'International Students', desc: 'Arriving from India, China, the Middle East. Securing housing months before landing. Family funds on the line, no local network to call on.', spend: 'Typical rent: $2,200 – $3,000 / month\nUpfront exposure: $5,000 – $7,000' },
+  { icon: Briefcase, name: 'Relocating Tech Workers', desc: 'Joining a Toronto company with a start date already set. Need somewhere liveable, fast. No time to fly out — no room for a mistake.', spend: 'Typical rent: $3,000 – $4,500 / month\nUpfront exposure: $6,000 – $9,000' },
+  { icon: Users, name: 'Immigrating Families', desc: 'Planning a permanent move. Children\'s schools decided. Cannot risk a fraudulent landlord, a dangerous building, or a unit that doesn\'t match the listing.', spend: 'Typical rent: $3,200 – $4,800 / month\nUpfront exposure: $7,000 – $10,000' },
 ] as const;
 
 const STEPS = [
-  {
-    num: '01',
-    title: 'Find a property',
-    desc: 'Browse listings for free. No payment until you\'re ready.',
-    icon: Search,
-    image: 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=800&auto=format&fit=crop',
-    imageAlt: 'Person browsing property listings',
-  },
-  {
-    num: '02',
-    title: 'Book verification',
-    desc: 'Choose a package (Standard, Comprehensive, or Premium) and pay only when you want a report.',
-    icon: CalendarCheck,
-    image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?q=80&w=800&auto=format&fit=crop',
-    imageAlt: 'Property verification and documentation',
-  },
-  {
-    num: '03',
-    title: 'Decide with confidence',
-    desc: 'Review the report, then move forward or walk away, informed.',
-    icon: ShieldCheck,
-    image: 'https://images.unsplash.com/photo-1560185893-a55cbc8c57e8?q=80&w=800&auto=format&fit=crop',
-    imageAlt: 'Keys and moving with confidence',
-  },
+  { num: 1, title: 'Share the Listing', desc: 'Send us the property address and your preferred viewing window. We confirm availability and quote your exact price within the hour.' },
+  { num: 2, title: 'We Book the Viewing', desc: 'We contact the landlord or agent and arrange a private session — coordinated around your timezone and Zoom availability.' },
+  { num: 3, title: 'Live Walkthrough', desc: 'Join on Zoom and direct the inspection in real time. Or receive the full 4K recorded walkthrough within a few hours.' },
+  { num: 4, title: 'Same-Day Report', desc: 'Your PDF lands the same evening — photos, findings, red flags, and our honest recommendation. You decide with full information.' },
 ] as const;
-
-const FAQ_ITEMS = [
-  {
-    value: 'what-is-verification',
-    question: 'What is property verification?',
-    answer:
-      'Property verification is an on-site inspection by a trained operator. They document the property with photos and video, complete a checklist (condition, utilities, landlord identity), and deliver a report so you can rent with confidence, especially when you can\'t visit in person.',
-  },
-  {
-    value: 'when-do-i-pay',
-    question: 'When do I pay for verification?',
-    answer:
-      'You only pay when you choose to verify a specific property. Browsing listings is free. When you\'re serious about a place and want a report before signing, you select a verification package and pay then.',
-  },
-  {
-    value: 'how-long-report',
-    question: 'How long until I get the report?',
-    answer:
-      'Standard: 48 hours. Comprehensive: 24 hours. Premium: same-day delivery. You\'ll get a link to your report (photos, video, checklist) once the verification is complete.',
-  },
-  {
-    value: 'which-properties',
-    question: 'Can I verify any property?',
-    answer:
-      'Verification is available for properties listed on our platform. If you see a "Verify" option on a listing, you can book a package for that property. Coverage depends on where our verification operators are available.',
-  },
-  {
-    value: 'what-if-mismatch',
-    question: 'What if the property doesn\'t match the report?',
-    answer:
-      'Our reports are produced from a real on-site visit. If you believe the report is inaccurate or the condition has changed significantly, contact support with your report reference. We take accuracy seriously and will work with you to resolve the issue.',
-  },
-] as const;
-
-/** Parallax factor: 0 = fixed, 1 = scrolls with content. 0.3–0.5 gives a subtle depth effect. */
-const HERO_PARALLAX_SPEED = 0.35;
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const SECTION_TITLE_CLASS = 'text-2xl font-semibold tracking-tight sm:text-3xl';
-const SECTION_SUBTITLE_CLASS = 'mt-2 max-w-3xl text-base text-slate-700';
 
 export default function HomePage() {
-  const heroRef = useRef<HTMLElement>(null);
-  const [backgroundOffset, setBackgroundOffset] = useState(0);
-  const [email, setEmail] = useState('');
-  const [emailStatus, setEmailStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [hasMounted, setHasMounted] = useState(false);
-  const [isAuthed, setIsAuthed] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
-
-  const isLandlord = userRole === 'PROPERTY_OWNER';
-  const browseHref = isLandlord ? '/landlord/dashboard' : '/properties';
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const syncAuth = () => setIsAuthed(Boolean(getAccessToken()));
-    syncAuth();
-    setHasMounted(true);
-    window.addEventListener('focus', syncAuth);
-    window.addEventListener('storage', syncAuth);
-    window.addEventListener(AUTH_CHANGED_EVENT, syncAuth as EventListener);
-    return () => {
-      window.removeEventListener('focus', syncAuth);
-      window.removeEventListener('storage', syncAuth);
-      window.removeEventListener(AUTH_CHANGED_EVENT, syncAuth as EventListener);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!hasMounted || !isAuthed) {
-      setUserRole(null);
-      return;
-    }
-    apiFetch<MeResponse>('/users/me', undefined, true)
-      .then((res) => setUserRole(res.data.user.role ?? null))
-      .catch((err: Error & { status?: number }) => {
-        setUserRole(null);
-        if (err?.status === 401) clearAccessToken();
-      });
-  }, [hasMounted, isAuthed]);
-
-  const handleEmailSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const normalizedEmail = email.trim();
-    if (!EMAIL_REGEX.test(normalizedEmail)) {
-      setEmailStatus('error');
-      return;
-    }
-    setEmail('');
-    setEmailStatus('success');
-  };
-
-  useEffect(() => {
-    const onScroll = () => {
-      if (!heroRef.current) return;
-      setBackgroundOffset(window.scrollY * HERO_PARALLAX_SPEED);
-    };
-    onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    const el = containerRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+      },
+      { threshold: 0.12, rootMargin: '0px 0px -40px 0px' }
+    );
+    el.querySelectorAll('.reveal').forEach((node) => obs.observe(node));
+    return () => obs.disconnect();
   }, []);
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#f4f4f5] text-slate-900">
-      {/* Hero: full viewport height with sticky nav overlay + parallax background */}
-      <section ref={heroRef} className="relative h-screen w-full">
-        <SiteNav overlay />
-        <Card className="absolute inset-0 overflow-hidden rounded-none border-0 shadow-none sm:rounded-none">
-          <div
-            className="absolute inset-0 scale-105"
-            style={{
-              backgroundImage:
-                'url(https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?q=80&w=1600&auto=format&fit=crop)',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              transform: `translateY(${backgroundOffset}px)`,
-              willChange: 'transform',
-            }}
-            aria-hidden
-          />
-          <div
-            className="absolute inset-0 bg-[linear-gradient(135deg,rgba(2,6,23,0.88)_0%,rgba(15,23,42,0.72)_45%,rgba(15,23,42,0.20)_72%,rgba(15,23,42,0)_100%)]"
-            aria-hidden
-          />
-          <div className="relative flex h-full min-h-0 flex-col justify-center p-6 sm:p-10">
-            <div className="mx-auto w-full max-w-5xl">
-              <h1 className="max-w-3xl text-4xl font-semibold leading-tight tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl">
-                Rent with confidence. Verify before you sign.
-              </h1>
-              <p className="mt-4 max-w-2xl text-base text-white/90 sm:text-lg">
-                Browse listings for free. Book an on-site verification and get a detailed report so you know exactly what you&apos;re getting.
-              </p>
-              <div className="mt-8 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
-                <Button
-                  asChild
-                  size="lg"
-                  className="h-11 w-full bg-white text-slate-900 hover:bg-white/90 sm:w-auto sm:min-w-[220px]"
-                >
-                  <Link href={browseHref}>{isLandlord ? 'Dashboard' : 'Browse properties'}</Link>
-                </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  variant="outline"
-                  className="h-11 w-full border-white/70 bg-white/10 text-white hover:bg-white/20 hover:text-white sm:w-auto sm:min-w-[220px]"
-                >
-                  <Link href="#services">View packages</Link>
-                </Button>
+    <div ref={containerRef} data-theme="toronto-concierge" className="min-h-screen">
+      <GrainOverlay />
+      <LandingNav />
+
+      {/* Hero */}
+      <section className="landing-hero">
+        <div className="landing-hero-glow" aria-hidden />
+        <div className="landing-hero-rule" aria-hidden />
+        <div className="landing-hero-inner">
+          <p className="landing-hero-label">Private Rental Due Diligence · Toronto, Canada</p>
+          <h1 className="landing-hero-title">
+            Before you send
+            <br />
+            the deposit,
+            <br />
+            <em>send someone you trust.</em>
+          </h1>
+          <p className="landing-hero-sub">
+            You&apos;re signing a lease from 10,000 km away. We inspect, verify, and report back with the honesty of a trusted friend on the ground — not a listing agent.
+          </p>
+          <div className="landing-hero-actions">
+            <a href="#offer" className="landing-btn-primary">
+              See What&apos;s Included
+            </a>
+            <a href={MAILTO} className="landing-btn-ghost">
+              Book a Verification
+            </a>
+          </div>
+          <div className="landing-hero-stats">
+            <div className="landing-hero-stat">
+              <span className="landing-hero-stat-num">$5K+</span>
+              <span className="landing-hero-stat-label">
+                Typical deposit
+                <br />
+                at risk
+              </span>
+            </div>
+            <div className="landing-hero-stat">
+              <span className="landing-hero-stat-num">4K</span>
+              <span className="landing-hero-stat-label">
+                Video
+                <br />
+                walkthrough
+              </span>
+            </div>
+            <div className="landing-hero-stat">
+              <span className="landing-hero-stat-num">Same Day</span>
+              <span className="landing-hero-stat-label">
+                PDF report
+                <br />
+                delivered
+              </span>
+            </div>
+          </div>
+        </div>
+        <a href="#offer" className="landing-scroll-hint" aria-label="Scroll to content">
+          <div className="landing-scroll-line" aria-hidden />
+        </a>
+      </section>
+
+      {/* Problem */}
+      <section className="landing-section" style={{ background: 'var(--ink)' }}>
+        <div className="landing-max">
+          <p className="landing-label reveal">The Risk Is Real</p>
+          <div className="landing-problem-grid">
+            <div className="reveal">
+              <h2 className="landing-heading landing-problem-heading">
+                Renting in Toronto
+                <br />
+                from abroad is
+                <br />
+                <em>genuinely dangerous.</em>
+                <p>
+                  The Toronto rental market moves fast, and overseas tenants have no way to verify what they&apos;re being shown. Thousands of dollars are committed on the basis of six photos and a floor plan.
+                </p>
+              </h2>
+            </div>
+            <ul className="landing-risk-list reveal">
+              {RISKS.map((risk) => {
+                const RiskIcon = risk.icon;
+                return (
+                  <li key={risk.title} className="landing-risk-item">
+                    <span className="landing-risk-icon" aria-hidden>
+                      <RiskIcon className="landing-risk-icon-svg" strokeWidth={1.5} />
+                    </span>
+                    <div className="landing-risk-text">
+                      <strong>{risk.title}</strong>
+                      <p>{risk.desc}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* Quote strip */}
+      <div className="landing-quote-strip">
+        <div className="landing-quote-inner reveal">
+          <p className="landing-quote-text">
+            &quot;Before you send a $5,000 deposit, have someone you trust on the ground.&quot;
+          </p>
+          <span className="landing-quote-attr">ZIP Home Rental Verification — Our Promise</span>
+        </div>
+      </div>
+
+      {/* Offer */}
+      <section className="landing-section landing-offer" id="offer" style={{ background: 'var(--slate)' }}>
+        <div className="landing-max landing-offer-inner">
+          <div className="landing-offer-top reveal">
+            <div>
+              <p className="landing-label">Rental Verification Concierge</p>
+              <h2 className="landing-heading">
+                Everything you need to decide
+                <br />
+                with <em>complete confidence.</em>
+              </h2>
+            </div>
+            <div className="landing-offer-price">
+              <p className="landing-price-eyebrow">Starting from</p>
+              <div className="landing-price-num">$350</div>
+              <p className="landing-price-suffix">$350 – $500 per property</p>
+            </div>
+          </div>
+          <div className="landing-deliverables reveal">
+            {DELIVERABLES.map((d) => (
+              <div key={d.num} className="landing-dlv">
+                <div className="landing-dlv-num">{d.num}</div>
+                <div className="landing-dlv-title">{d.title}</div>
+                <div className="landing-dlv-desc">{d.desc}</div>
+              </div>
+            ))}
+          </div>
+          <div className="landing-offer-footer reveal">
+            <span className="landing-offer-footer-icon" aria-hidden>
+              <ClipboardList className="landing-offer-footer-icon-svg" strokeWidth={1.5} />
+            </span>
+            <p className="landing-offer-footer-text">
+              Delivered the <strong>same evening:</strong> a full PDF report with photos, findings, red flags, and a clear recommendation. Decide with confidence before you commit a cent.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Clients */}
+      <section className="landing-section" style={{ background: 'var(--slate)' }}>
+        <div className="landing-max">
+          <div className="reveal">
+            <p className="landing-label">Who We Serve</p>
+            <h2 className="landing-heading">
+              Those who <em>cannot afford
+              <br />
+              to get it wrong.</em>
+            </h2>
+          </div>
+          <div className="landing-client-cards" style={{ marginTop: 60 }}>
+            {CLIENTS.map((c, i) => {
+                const ClientIcon = c.icon;
+                return (
+                  <div key={c.name} className="landing-client-card reveal" style={{ transitionDelay: `${i * 0.12}s` }}>
+                    <span className="landing-client-icon" aria-hidden>
+                      <ClientIcon className="landing-client-icon-svg" strokeWidth={1.5} />
+                    </span>
+                    <div className="landing-client-name">{c.name}</div>
+                <div className="landing-client-desc">{c.desc}</div>
+                <div className="landing-client-spend">{c.spend}</div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      </section>
+
+      {/* Math */}
+      <section className="landing-section" style={{ background: 'var(--ink)' }}>
+        <div className="landing-max" style={{ textAlign: 'center', maxWidth: 860 }}>
+          <div className="reveal">
+            <p className="landing-label">The Simple Calculation</p>
+            <h2 className="landing-heading">The math is <em>undeniable.</em></h2>
+            <p className="landing-muted" style={{ marginBottom: 60, fontWeight: 300 }}>
+              At Toronto rent prices, $400 for certainty is not an expense.
+            </p>
+          </div>
+          <div className="landing-math-boxes reveal">
+            <div className="landing-math-box danger">
+              <div className="landing-math-box-eyebrow">Your Risk Without Us</div>
+              <div className="landing-math-amount">$8,000</div>
+              <div className="landing-math-desc">
+                Deposit + first & last month&apos;s rent. Gone if the property is misrepresented, fraudulent, or unliveable on arrival.
+              </div>
+            </div>
+            <div className="landing-math-vs-cell">
+              <span className="landing-math-vs">vs</span>
+            </div>
+            <div className="landing-math-box safe">
+              <div className="landing-math-box-eyebrow">Cost of Certainty</div>
+              <div className="landing-math-amount">$400</div>
+              <div className="landing-math-desc">
+                One honest verification. One same-day report. One trusted person on the ground before you commit a cent.
               </div>
             </div>
           </div>
-        </Card>
+          <p className="landing-math-conclusion reveal">
+            For the cost of a single dinner in downtown Toronto, you protect a financial commitment most people make once and cannot undo.{' '}
+            <strong>$400 for certainty is not an expense — it&apos;s the most rational decision you&apos;ll make in your entire move.</strong>
+          </p>
+        </div>
       </section>
-      <div className="mx-auto max-w-6xl space-y-12 px-4 py-8 sm:space-y-16 sm:px-6 sm:py-12 md:space-y-20 md:py-16">
-        {/* Our services – what the business does (aligned with docs BUSINESS_ANALYSIS.md § Services) */}
-        <section className="space-y-8">
-          <div>
-            <h2 className={SECTION_TITLE_CLASS}>Our services</h2>
-            <p className={SECTION_SUBTITLE_CLASS}>
-              We connect renters with property owners and provide on-site verification so you can see it before you sign.
-            </p>
-          </div>
 
-          <div className="grid grid-cols-1 gap-6">
-            {SERVICE_ITEMS.map((item, index) => {
-              const imageLeft = index % 2 === 0;
-              const ServiceIcon = item.icon;
-              return (
-                <Card
-                  key={item.title}
-                  className="relative overflow-hidden rounded-2xl border-slate-200 pt-0 shadow-sm transition-shadow hover:shadow-md"
-                >
-                  <div
-                    className={`flex flex-col md:flex-row ${imageLeft ? '' : 'md:flex-row-reverse'}`}
-                  >
-                    <div className="relative aspect-video w-full shrink-0 overflow-hidden bg-slate-100 md:aspect-[16/10] md:min-h-[240px] md:w-2/5">
-                      <div className="absolute inset-0 z-30 bg-black/35" aria-hidden />
-                      <img
-                        src={item.image}
-                        alt={item.imageAlt}
-                        className="relative z-20 h-full w-full object-cover brightness-60 dark:brightness-40"
-                      />
-                    </div>
-                    <div className="flex flex-1 flex-col justify-center p-6 md:p-8">
-                      <CardHeader className="space-y-3 p-0 pb-3">
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                            <ServiceIcon className="h-5 w-5" aria-hidden />
-                          </span>
-                          <CardTitle className="text-xl leading-tight">{item.title}</CardTitle>
-                        </div>
-                        <CardDescription className="text-base leading-relaxed text-slate-700">
-                          {item.description}
-                        </CardDescription>
-                      </CardHeader>
-                      <CardFooter className="p-0 pt-4">
-                        <Button asChild variant={item.isPrimary ? 'default' : 'outline'} className="min-w-[180px]">
-                          <Link href={item.href === '/properties' ? browseHref : item.href}>
-                            {item.href === '/properties' && isLandlord ? 'Dashboard' : item.cta}
-                          </Link>
-                        </Button>
-                      </CardFooter>
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
+      {/* Process */}
+      <section className="landing-section" id="how" style={{ background: 'var(--slate)' }}>
+        <div className="landing-max">
+          <div className="landing-process-top reveal">
+            <div>
+              <p className="landing-label">How It Works</p>
+              <h2 className="landing-heading">
+                Simple. Fast.
+                <br />
+                <em>No surprises.</em>
+              </h2>
+            </div>
+            <div className="landing-process-time">
+              Turnaround: same day
+              <br />
+              Availability: limited weekly slots
+            </div>
           </div>
-        </section>
-
-        {/* Verification packages – detail */}
-        <section id="services" className="scroll-mt-8 space-y-6">
-          <div>
-            <h2 className={SECTION_TITLE_CLASS}>Verification packages</h2>
-            <p className={SECTION_SUBTITLE_CLASS}>
-              Choose the level of detail you need. Pay only when you want a report for a specific property.
-            </p>
-          </div>
-          <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-slate-700">
-            Select a property first, then choose a package at checkout.{' '}
-            <Link href={browseHref} className="font-medium text-primary underline underline-offset-2">
-              {isLandlord ? 'Dashboard' : 'Browse properties'}
-            </Link>
-            .
-          </div>
-          <div className="grid gap-5 md:grid-cols-3">
-            {VERIFICATION_PACKAGES.map((pkg) => (
-              <Card
-                key={pkg.name}
-                className={`relative flex flex-col overflow-hidden rounded-2xl transition-shadow ${
-                  pkg.highlighted
-                    ? 'border-primary/70 bg-slate-900 text-white shadow-lg md:scale-[1.02]'
-                    : 'border-slate-200 bg-white shadow-sm hover:shadow-md'
-                }`}
-              >
-                <CardHeader className={`relative space-y-2 ${pkg.highlighted ? 'pr-28' : ''}`}>
-                  {pkg.highlighted && (
-                    <CardAction>
-                      <Badge className="shrink-0 px-4 py-1.5 text-xs font-medium bg-white text-slate-900">
-                        Popular
-                      </Badge>
-                    </CardAction>
-                  )}
-                  <CardTitle className={`text-lg ${pkg.highlighted ? 'text-white' : 'text-slate-900'}`}>
-                    {pkg.name}
-                  </CardTitle>
-                  <p className={`text-2xl font-bold ${pkg.highlighted ? 'text-white' : 'text-primary'}`}>
-                    ${pkg.price}
-                  </p>
-                  <CardDescription className={pkg.highlighted ? 'text-slate-200' : 'text-slate-700'}>
-                    {pkg.description}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="flex-1 space-y-4 pt-4">
-                  <ul className={`space-y-2 text-sm ${pkg.highlighted ? 'text-slate-200' : 'text-slate-700'}`}>
-                    {pkg.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2">
-                        <span className={`mt-0.5 shrink-0 ${pkg.highlighted ? 'text-white' : 'text-primary'}`}>✓</span>
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-                <CardFooter className="pt-4">
-                  <Button
-                    asChild
-                    className={pkg.highlighted ? 'w-full bg-white text-slate-900 hover:bg-white/90' : 'w-full'}
-                    variant={pkg.highlighted ? 'default' : 'outline'}
-                  >
-                    <Link href={browseHref}>{isLandlord ? 'Dashboard' : pkg.cta}</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
+          <div className="landing-process-steps reveal">
+            <div className="landing-process-track" aria-hidden />
+            {STEPS.map((step) => (
+              <div key={step.num} className="landing-step">
+                <div className="landing-step-circle">{step.num}</div>
+                <div className="landing-step-title">{step.title}</div>
+                <div className="landing-step-desc">{step.desc}</div>
+              </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* FAQ */}
-        <section id="faq" className="scroll-mt-8 space-y-6">
-          <div>
-            <h2 className={SECTION_TITLE_CLASS}>Frequently asked questions</h2>
-            <p className={SECTION_SUBTITLE_CLASS}>Common questions about verification and how ZIP works.</p>
-          </div>
-          <Card className="overflow-hidden">
-            <CardContent className="p-0">
-              <Accordion type="single" collapsible defaultValue="what-is-verification" className="w-full">
-                {FAQ_ITEMS.map((item) => (
-                  <AccordionItem key={item.value} value={item.value} className="border-b px-4 last:border-b-0 sm:px-6">
-                    <AccordionTrigger className="py-5 text-left text-base hover:no-underline">
-                      {item.question}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-slate-700">
-                      {item.answer}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
-          <p className="text-sm text-slate-700">
-            Still have questions?{' '}
-            <a href="mailto:support@zipconcierge.com" className="font-medium text-primary underline underline-offset-2">
-              Contact us
-            </a>
-            .
+      {/* CTA */}
+      <section className="landing-cta" id="book" style={{ background: 'var(--ink)' }}>
+        <div className="landing-cta-inner">
+          <p className="landing-label reveal" style={{ textAlign: 'center' }}>
+            Ready to proceed safely?
           </p>
-        </section>
+          <h2 className="landing-cta-heading reveal">
+            Secure your inspection.
+            <em>Secure your home.</em>
+          </h2>
+          <p className="landing-cta-sub reveal">
+            We take a limited number of verifications each week to ensure every client receives our complete attention. Reach out now to check availability for your property.
+          </p>
+          <p className="landing-cta-availability reveal">
+            Limited weekly slots available · Response within 2 hours
+          </p>
+          <div className="landing-cta-actions reveal">
+            <a href={MAILTO_SUBJECT} className="landing-btn-primary">
+              Request a Verification
+            </a>
+            <span className="landing-cta-email-label">Or write to us directly</span>
+            <a href={MAILTO} className="landing-cta-email">
+              info@ziphvs.com
+            </a>
+          </div>
+        </div>
+      </section>
 
-        {/* How it works */}
-        <section className="space-y-8">
-          <div className="text-center">
-            <h2 className={SECTION_TITLE_CLASS}>Your home in 3 steps</h2>
-            <p className="mt-2 text-base text-slate-700">Simple, transparent, and designed so you only pay when it matters.</p>
-          </div>
-          <div className="flex flex-col items-center md:flex-row md:items-stretch md:justify-center md:gap-0">
-            {STEPS.map((step, index) => {
-              const Icon = step.icon;
-              return (
-                <Fragment key={step.num}>
-                  <div className="flex w-full max-w-sm flex-1 flex-col md:max-w-none">
-                    <Card className="relative flex h-full flex-col overflow-hidden rounded-2xl border-slate-200 pt-0 shadow-sm transition-shadow hover:shadow-md">
-                      <div className="relative h-40 w-full overflow-hidden bg-slate-100">
-                        <div className="absolute inset-0 z-30 bg-black/35" aria-hidden />
-                        <img
-                          src={step.image}
-                          alt={step.imageAlt}
-                          className="relative z-20 h-full w-full object-cover brightness-60 dark:brightness-40"
-                        />
-                        <div className="absolute bottom-3 left-4 z-40 flex items-center gap-2">
-                          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground shadow-md">
-                            {step.num}
-                          </span>
-                          <span className="text-sm font-medium text-white drop-shadow-sm">{step.title}</span>
-                        </div>
-                        <div className="absolute right-4 top-4 z-40 flex h-11 w-11 items-center justify-center rounded-full border-2 border-white/30 bg-white/10 text-white backdrop-blur-sm">
-                          <Icon className="h-5 w-5" strokeWidth={2} aria-hidden />
-                        </div>
-                      </div>
-                      <CardHeader className="flex flex-1 flex-col gap-3 p-5">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                          <Icon className="h-6 w-6" strokeWidth={2} aria-hidden />
-                        </div>
-                        <CardTitle className="text-lg font-semibold leading-tight tracking-tight text-slate-900">{step.title}</CardTitle>
-                        <CardDescription className="text-sm text-slate-700">{step.desc}</CardDescription>
-                      </CardHeader>
-                    </Card>
-                    {/* Mobile: down arrow between stacked steps */}
-                    {index < STEPS.length - 1 && (
-                      <div className="flex shrink-0 justify-center py-3 md:hidden" aria-hidden>
-                        <ChevronDown className="h-6 w-6 text-slate-400" />
-                      </div>
-                    )}
-                  </div>
-                  {/* Desktop: arrow between columns only, no lines */}
-                  {index < STEPS.length - 1 && (
-                    <div
-                      className="hidden shrink-0 items-center justify-center self-center px-1 md:flex"
-                      aria-hidden
-                    >
-                      <ChevronRight className="h-8 w-8 text-slate-400" />
-                    </div>
-                  )}
-                </Fragment>
-              );
-            })}
-          </div>
-          <div className="flex justify-center">
-            <Button asChild size="lg" className="min-w-[220px]">
-              <Link href={browseHref}>{isLandlord ? 'Dashboard' : 'Start browsing'}</Link>
-            </Button>
-          </div>
-        </section>
-
-        {/* CTA */}
-        <Card className="overflow-hidden rounded-2xl border-0 bg-slate-900 text-white">
-          <div className="grid gap-8 p-8 sm:p-10 md:grid-cols-2 md:items-center">
-            <div>
-              <h3 className="text-2xl font-semibold tracking-tight sm:text-3xl">Ready to find your place?</h3>
-              <p className="mt-3 text-base text-slate-300">
-                Browse listings and book verification only when you&apos;re ready to move.
-              </p>
-              <Button asChild size="lg" className="mt-6 bg-white text-slate-900 hover:bg-white/90">
-                <Link href={browseHref}>{isLandlord ? 'Dashboard' : 'Start browsing'}</Link>
-              </Button>
-            </div>
-            <Card className="border-slate-700 bg-slate-800">
-              <CardHeader>
-                <CardTitle className="text-lg text-white">Get updates</CardTitle>
-                <CardDescription className="text-slate-300">New listings + product updates.</CardDescription>
-              </CardHeader>
-              <CardContent className="p-6 pt-0">
-                <form className="space-y-4" noValidate onSubmit={handleEmailSubmit}>
-                  <div className="space-y-2">
-                    <Label htmlFor="home-updates-email" className="text-sm text-slate-200">
-                      Email
-                    </Label>
-                    <Input
-                      id="home-updates-email"
-                      type="email"
-                      value={email}
-                      onChange={(event) => {
-                        setEmail(event.target.value);
-                        if (emailStatus !== 'idle') setEmailStatus('idle');
-                      }}
-                      placeholder="name@example.com"
-                      className="h-11 border-slate-600 bg-slate-800 text-white placeholder:text-slate-400"
-                    />
-                    <p className="text-xs text-slate-400">New listings + product updates.</p>
-                  </div>
-                  <Button type="submit" className="w-full bg-white text-slate-900 hover:bg-white/90">
-                    Get updates
-                  </Button>
-                </form>
-                {emailStatus === 'success' ? (
-                  <p className="mt-3 text-sm text-emerald-300" role="status">
-                    Thanks - check your inbox.
-                  </p>
-                ) : null}
-                {emailStatus === 'error' ? (
-                  <p className="mt-3 text-sm text-rose-300" role="alert">
-                    Enter a valid email.
-                  </p>
-                ) : null}
-              </CardContent>
-            </Card>
-          </div>
-        </Card>
-      </div>
-      <SiteFooter />
-    </main>
+      <LandingFooter />
+    </div>
   );
 }

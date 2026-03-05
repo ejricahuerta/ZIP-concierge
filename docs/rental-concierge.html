@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toronto Rental Concierge — Private Due Diligence for Overseas Tenants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #0d0d0d;
+    --cream: #f5f0e8;
+    --gold: #b8966a;
+    --gold-light: #d4b483;
+    --slate: #1a1a1f;
+    --muted: #888890;
+    --white: #ffffff;
+  }
+
+  html { scroll-behavior: smooth; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--ink); color: var(--cream); overflow-x: hidden; }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.04; pointer-events: none; z-index: 9999;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 28px 60px;
+    transition: background 0.4s, padding 0.4s, border-color 0.4s;
+    border-bottom: 1px solid transparent;
+  }
+  nav.scrolled { background: rgba(13,13,13,0.97); padding: 18px 60px; border-bottom-color: rgba(255,255,255,0.06); backdrop-filter: blur(12px); }
+  .nav-logo { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 400; letter-spacing: 0.18em; color: var(--gold); text-transform: uppercase; text-decoration: none; }
+  .nav-right { display: flex; gap: 32px; align-items: center; }
+  .nav-link { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(245,240,232,0.5); text-decoration: none; transition: color 0.2s; }
+  .nav-link:hover { color: var(--cream); }
+  .nav-cta { font-size: 0.7rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink); background: var(--gold); padding: 11px 26px; text-decoration: none; transition: background 0.25s; }
+  .nav-cta:hover { background: var(--gold-light); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 140px 60px 100px; position: relative; overflow: hidden;
+  }
+  .hero-glow {
+    position: absolute; width: 800px; height: 800px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(184,150,106,0.07) 0%, transparent 65%);
+    top: 50%; left: 50%; transform: translate(-50%, -52%); pointer-events: none;
+    animation: glowPulse 6s ease-in-out infinite;
+  }
+  @keyframes glowPulse {
+    0%, 100% { opacity: 1; transform: translate(-50%,-52%) scale(1); }
+    50% { opacity: 0.6; transform: translate(-50%,-52%) scale(1.08); }
+  }
+  .hero-rule {
+    position: absolute; top: 50%; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(184,150,106,0.1) 30%, rgba(184,150,106,0.1) 70%, transparent);
+    pointer-events: none;
+  }
+  .hero-inner { max-width: 900px; text-align: center; position: relative; z-index: 1; }
+  .hero-label {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-size: 0.68rem; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold);
+    margin-bottom: 56px; animation: fadeUp 0.9s ease both;
+  }
+  .hero-label::before, .hero-label::after { content: ''; width: 32px; height: 1px; background: rgba(184,150,106,0.4); flex-shrink: 0; }
+  .hero-heading {
+    font-family: 'Cormorant Garamond', serif; font-size: clamp(3.2rem, 7.5vw, 6.4rem); font-weight: 300;
+    line-height: 1.04; color: var(--white); margin-bottom: 36px; animation: fadeUp 1s 0.1s ease both;
+  }
+  .hero-heading em { font-style: italic; color: var(--gold-light); display: block; }
+  .hero-sub {
+    font-size: 1.05rem; font-weight: 300; line-height: 1.8; color: rgba(245,240,232,0.6);
+    max-width: 540px; margin: 0 auto 60px; animation: fadeUp 1s 0.2s ease both;
+  }
+  .hero-actions { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; animation: fadeUp 1s 0.3s ease both; }
+  .btn-primary {
+    display: inline-block; background: var(--gold); color: var(--ink);
+    font-size: 0.75rem; font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase;
+    text-decoration: none; padding: 17px 44px; transition: background 0.25s, transform 0.2s;
+  }
+  .btn-primary:hover { background: var(--gold-light); transform: translateY(-2px); }
+  .btn-ghost {
+    display: inline-block; color: var(--cream); font-size: 0.75rem; font-weight: 400;
+    letter-spacing: 0.12em; text-transform: uppercase; text-decoration: none; padding: 17px 44px;
+    border: 1px solid rgba(245,240,232,0.2); transition: border-color 0.25s, color 0.25s;
+  }
+  .btn-ghost:hover { border-color: var(--gold); color: var(--gold); }
+
+  .hero-stats {
+    display: flex; justify-content: center; margin-top: 80px;
+    border: 1px solid rgba(255,255,255,0.07); max-width: 540px; margin-left: auto; margin-right: auto;
+    animation: fadeUp 1s 0.45s ease both;
+  }
+  .stat { flex: 1; padding: 26px 18px; text-align: center; border-right: 1px solid rgba(255,255,255,0.07); }
+  .stat:last-child { border-right: none; }
+  .stat-number { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; font-weight: 300; color: var(--gold-light); display: block; line-height: 1; }
+  .stat-label { font-size: 0.6rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-top: 7px; display: block; line-height: 1.4; }
+
+  .scroll-hint { position: absolute; bottom: 44px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 10px; animation: fadeUp 1s 0.8s ease both; }
+  .scroll-hint span { font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(136,136,144,0.45); }
+  .scroll-line { width: 1px; height: 38px; background: linear-gradient(to bottom, rgba(184,150,106,0.5), transparent); animation: scrollDrop 2s ease-in-out infinite; }
+  @keyframes scrollDrop {
+    0% { transform: scaleY(0); transform-origin: top; opacity: 1; }
+    50% { transform: scaleY(1); transform-origin: top; opacity: 1; }
+    100% { transform: scaleY(1); transform-origin: bottom; opacity: 0; }
+  }
+
+  /* SECTION LABEL */
+  .section-label { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.28em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+
+  /* PROBLEM */
+  .problem { padding: 130px 60px; max-width: 1120px; margin: 0 auto; }
+  .problem-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 80px; align-items: start; margin-top: 52px; }
+  .problem-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.8vw, 3.2rem); font-weight: 300; line-height: 1.18; color: var(--white); position: sticky; top: 110px; }
+  .problem-heading em { font-style: italic; color: var(--gold-light); }
+  .problem-heading p { font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 300; line-height: 1.78; color: rgba(245,240,232,0.5); margin-top: 24px; font-style: normal; }
+  .problem-risks { list-style: none; display: flex; flex-direction: column; gap: 3px; }
+  .risk-item {
+    display: flex; gap: 20px; align-items: flex-start; padding: 26px 28px;
+    background: rgba(255,255,255,0.025); border: 1px solid rgba(255,255,255,0.06); border-left: 2px solid rgba(184,150,106,0.3);
+    transition: background 0.25s, border-left-color 0.25s; cursor: default;
+  }
+  .risk-item:hover { background: rgba(184,150,106,0.04); border-left-color: var(--gold); }
+  .risk-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 3px; }
+  .risk-text strong { color: var(--white); font-weight: 500; display: block; margin-bottom: 6px; font-size: 0.88rem; }
+  .risk-text p { font-size: 0.8rem; font-weight: 300; line-height: 1.68; color: rgba(245,240,232,0.5); }
+
+  /* QUOTE STRIP */
+  .quote-strip { background: var(--slate); padding: 88px 60px; position: relative; overflow: hidden; }
+  .quote-strip::before {
+    content: '"'; position: absolute; left: 7%; top: -30px;
+    font-family: 'Cormorant Garamond', serif; font-size: 22rem; color: rgba(184,150,106,0.05);
+    line-height: 1; pointer-events: none; user-select: none;
+  }
+  .quote-inner { max-width: 820px; margin: 0 auto; text-align: center; position: relative; }
+  .quote-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.7rem, 3.2vw, 2.8rem); font-weight: 300; font-style: italic; line-height: 1.45; color: var(--white); margin-bottom: 26px; }
+  .quote-attr { font-size: 0.67rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); }
+
+  /* OFFER */
+  .offer { padding: 130px 60px; position: relative; overflow: hidden; }
+  .offer::after {
+    content: ''; position: absolute; top: -150px; right: -200px; width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(184,150,106,0.05) 0%, transparent 70%); pointer-events: none;
+  }
+  .offer-inner { max-width: 1120px; margin: 0 auto; position: relative; z-index: 1; }
+  .offer-top {
+    display: grid; grid-template-columns: 1fr auto; gap: 60px; align-items: end;
+    margin-bottom: 52px; padding-bottom: 40px; border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .offer-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.8vw, 3.4rem); font-weight: 300; line-height: 1.12; color: var(--white); }
+  .offer-heading em { font-style: italic; color: var(--gold-light); }
+  .offer-price { text-align: right; flex-shrink: 0; }
+  .price-eyebrow { font-size: 0.62rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+  .price-num { font-family: 'Cormorant Garamond', serif; font-size: 4.8rem; font-weight: 300; color: var(--gold-light); line-height: 1; }
+  .price-suffix { font-size: 0.73rem; color: var(--muted); margin-top: 8px; }
+
+  .deliverables { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .dlv { padding: 38px 34px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.055); transition: background 0.3s, border-color 0.3s; position: relative; }
+  .dlv::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--gold), rgba(184,150,106,0.15)); transform: scaleX(0); transform-origin: left; transition: transform 0.4s ease; }
+  .dlv:hover { background: rgba(184,150,106,0.04); border-color: rgba(184,150,106,0.16); }
+  .dlv:hover::after { transform: scaleX(1); }
+  .dlv-num { font-family: 'Cormorant Garamond', serif; font-size: 0.8rem; color: rgba(184,150,106,0.32); margin-bottom: 18px; }
+  .dlv-title { font-size: 0.9rem; font-weight: 500; color: var(--white); margin-bottom: 12px; line-height: 1.35; }
+  .dlv-desc { font-size: 0.79rem; font-weight: 300; line-height: 1.72; color: rgba(245,240,232,0.46); }
+
+  .offer-footer { margin-top: 44px; padding: 34px 38px; background: rgba(184,150,106,0.05); border: 1px solid rgba(184,150,106,0.14); display: flex; align-items: center; gap: 22px; }
+  .offer-footer-icon { font-size: 1.5rem; flex-shrink: 0; }
+  .offer-footer-text { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 300; font-style: italic; color: var(--white); line-height: 1.45; }
+  .offer-footer-text strong { font-style: normal; font-weight: 500; color: var(--gold-light); }
+
+  /* CLIENTS */
+  .clients { background: var(--slate); padding: 130px 60px; }
+  .clients-inner { max-width: 1120px; margin: 0 auto; }
+  .clients-header { margin-bottom: 60px; }
+  .clients-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.8vw, 3.2rem); font-weight: 300; color: var(--white); line-height: 1.15; }
+  .clients-heading em { font-style: italic; color: var(--gold-light); }
+  .client-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .client-card { padding: 46px 36px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.055); transition: background 0.3s; }
+  .client-card:hover { background: rgba(255,255,255,0.035); }
+  .client-icon { font-size: 2rem; margin-bottom: 24px; display: block; }
+  .client-name { font-family: 'Cormorant Garamond', serif; font-size: 1.55rem; font-weight: 400; color: var(--white); margin-bottom: 14px; }
+  .client-desc { font-size: 0.82rem; font-weight: 300; line-height: 1.72; color: rgba(245,240,232,0.48); margin-bottom: 26px; }
+  .client-spend { font-size: 0.7rem; line-height: 1.8; color: var(--gold); letter-spacing: 0.04em; border-top: 1px solid rgba(184,150,106,0.16); padding-top: 20px; }
+
+  /* MATH */
+  .math { padding: 130px 60px; max-width: 860px; margin: 0 auto; text-align: center; }
+  .math-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.9rem, 3.2vw, 3rem); font-weight: 300; color: var(--white); margin-bottom: 14px; line-height: 1.2; }
+  .math-heading em { font-style: italic; color: var(--gold-light); }
+  .math-sub { font-size: 0.84rem; color: var(--muted); margin-bottom: 60px; font-weight: 300; }
+  .math-boxes { display: grid; grid-template-columns: 1fr 72px 1fr; align-items: stretch; margin-bottom: 60px; }
+  .math-box { padding: 46px 34px; border: 1px solid rgba(255,255,255,0.07); text-align: center; }
+  .math-box.danger { border-color: rgba(200,100,100,0.2); background: rgba(200,100,100,0.03); }
+  .math-box.safe { border-color: rgba(184,150,106,0.22); background: rgba(184,150,106,0.04); }
+  .math-box-eyebrow { font-size: 0.6rem; letter-spacing: 0.22em; text-transform: uppercase; margin-bottom: 18px; }
+  .math-box.danger .math-box-eyebrow { color: rgba(200,120,120,0.75); }
+  .math-box.safe .math-box-eyebrow { color: var(--gold); }
+  .math-amount { font-family: 'Cormorant Garamond', serif; font-size: 3.8rem; font-weight: 300; line-height: 1; margin-bottom: 14px; }
+  .math-box.danger .math-amount { color: #c97575; }
+  .math-box.safe .math-amount { color: var(--gold-light); }
+  .math-desc { font-size: 0.77rem; font-weight: 300; line-height: 1.62; color: rgba(245,240,232,0.44); }
+  .math-vs-cell { display: flex; align-items: center; justify-content: center; background: var(--slate); border-top: 1px solid rgba(255,255,255,0.07); border-bottom: 1px solid rgba(255,255,255,0.07); }
+  .math-vs { font-family: 'Cormorant Garamond', serif; font-size: 1.15rem; font-style: italic; color: rgba(136,136,144,0.55); }
+  .math-conclusion { font-size: 0.97rem; font-weight: 300; line-height: 1.85; color: rgba(245,240,232,0.58); max-width: 640px; margin: 0 auto; }
+  .math-conclusion strong { color: var(--gold-light); font-weight: 500; }
+
+  /* PROCESS */
+  .process { background: var(--slate); padding: 130px 60px; }
+  .process-inner { max-width: 1120px; margin: 0 auto; }
+  .process-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 76px; }
+  .process-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.2rem, 3.8vw, 3.2rem); font-weight: 300; color: var(--white); line-height: 1.15; }
+  .process-heading em { font-style: italic; color: var(--gold-light); }
+  .process-time { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-align: right; line-height: 1.8; }
+  .process-steps { display: grid; grid-template-columns: repeat(4, 1fr); position: relative; }
+  .process-track { position: absolute; top: 27px; left: 27px; right: 27px; height: 1px; background: rgba(184,150,106,0.14); z-index: 0; }
+  .step { padding: 0 26px 0 0; position: relative; z-index: 1; }
+  .step:last-child { padding-right: 0; }
+  .step-circle {
+    width: 54px; height: 54px; border-radius: 50%; background: var(--ink); border: 1px solid rgba(184,150,106,0.32);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; color: var(--gold); margin-bottom: 28px;
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .step:hover .step-circle { border-color: var(--gold); background: rgba(184,150,106,0.06); }
+  .step-title { font-size: 0.88rem; font-weight: 500; color: var(--white); margin-bottom: 12px; }
+  .step-desc { font-size: 0.79rem; font-weight: 300; line-height: 1.72; color: rgba(245,240,232,0.44); }
+
+  /* CTA */
+  .cta { padding: 150px 60px; text-align: center; position: relative; overflow: hidden; }
+  .cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 60%, rgba(184,150,106,0.09) 0%, transparent 65%); pointer-events: none; }
+  .cta-inner { position: relative; max-width: 720px; margin: 0 auto; }
+  .cta-heading { font-family: 'Cormorant Garamond', serif; font-size: clamp(2.4rem, 4.5vw, 4.4rem); font-weight: 300; line-height: 1.1; color: var(--white); margin-bottom: 28px; }
+  .cta-heading em { font-style: italic; color: var(--gold-light); display: block; }
+  .cta-sub { font-size: 0.93rem; font-weight: 300; line-height: 1.82; color: rgba(245,240,232,0.54); margin-bottom: 16px; max-width: 560px; margin-left: auto; margin-right: auto; }
+  .cta-availability { font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(184,150,106,0.55); margin-bottom: 50px; }
+  .cta-actions { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+  .cta-email-label { font-size: 0.63rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+  .cta-email { font-family: 'Cormorant Garamond', serif; font-size: 1.22rem; color: var(--gold-light); text-decoration: none; border-bottom: 1px solid rgba(212,180,131,0.28); padding-bottom: 3px; transition: border-color 0.2s; }
+  .cta-email:hover { border-color: var(--gold-light); }
+
+  /* BOOKING BAR */
+  .booking-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 99;
+    background: rgba(13,13,13,0.96); border-top: 1px solid rgba(184,150,106,0.18); backdrop-filter: blur(16px);
+    padding: 16px 60px; display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    transform: translateY(100%); transition: transform 0.4s ease;
+  }
+  .booking-bar.visible { transform: translateY(0); }
+  .booking-bar-text { font-size: 0.8rem; font-weight: 300; color: rgba(245,240,232,0.6); }
+  .booking-bar-text strong { color: var(--white); font-weight: 500; }
+  .booking-bar-price { font-family: 'Cormorant Garamond', serif; font-size: 1.55rem; font-weight: 300; color: var(--gold-light); white-space: nowrap; }
+
+  /* FOOTER */
+  footer { border-top: 1px solid rgba(255,255,255,0.06); padding: 36px 60px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+  .footer-logo { font-family: 'Cormorant Garamond', serif; font-size: 0.9rem; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); }
+  .footer-links { display: flex; gap: 28px; }
+  .footer-link { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-link:hover { color: var(--cream); }
+  .footer-note { font-size: 0.66rem; color: rgba(136,136,144,0.45); letter-spacing: 0.04em; width: 100%; text-align: right; margin-top: 2px; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
+  .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.85s ease, transform 0.85s ease; }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* RESPONSIVE */
+  @media (max-width: 960px) {
+    nav, nav.scrolled { padding-left: 28px; padding-right: 28px; }
+    .nav-link { display: none; }
+    .hero, .problem, .offer, .clients, .math, .process, .cta, footer { padding-left: 28px; padding-right: 28px; }
+    .hero { padding-top: 110px; padding-bottom: 80px; }
+    .problem-grid, .offer-top, .client-cards, .process-top { grid-template-columns: 1fr; gap: 40px; }
+    .problem-heading { position: static; }
+    .offer-price { text-align: left; }
+    .deliverables { grid-template-columns: 1fr; }
+    .math-boxes { grid-template-columns: 1fr; }
+    .math-vs-cell { padding: 20px; border: none; }
+    .process-steps { grid-template-columns: 1fr; gap: 44px; }
+    .process-track { display: none; }
+    .step { padding-right: 0; }
+    .booking-bar { padding: 14px 28px; flex-wrap: wrap; gap: 12px; }
+    footer { padding: 28px; }
+    .footer-note { text-align: left; }
+  }
+  @media (max-width: 600px) {
+    .hero-heading { font-size: 2.8rem; }
+    .hero-actions { flex-direction: column; }
+    .btn-primary, .btn-ghost { text-align: center; }
+    .hero-stats { flex-direction: column; }
+    .stat { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .stat:last-child { border-bottom: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav id="nav">
+  <a href="#" class="nav-logo">Toronto Rental Concierge</a>
+  <div class="nav-right">
+    <a href="#offer" class="nav-link">What's Included</a>
+    <a href="#how" class="nav-link">How It Works</a>
+    <a href="mailto:hello@torontorentalconcierge.com" class="nav-cta">Book a Verification</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-rule"></div>
+  <div class="hero-inner">
+    <div class="hero-label">Private Rental Due Diligence · Toronto, Canada</div>
+    <h1 class="hero-heading">
+      Before you send<br>
+      the deposit,<br>
+      <em>send someone you trust.</em>
+    </h1>
+    <p class="hero-sub">You're signing a lease from 10,000 km away. We inspect, verify, and report back with the honesty of a trusted friend on the ground — not a listing agent.</p>
+    <div class="hero-actions">
+      <a href="#offer" class="btn-primary">See What's Included</a>
+      <a href="mailto:hello@torontorentalconcierge.com" class="btn-ghost">Book a Verification</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-number">$5K+</span><span class="stat-label">Typical deposit<br>at risk</span></div>
+      <div class="stat"><span class="stat-number">4K</span><span class="stat-label">Video<br>walkthrough</span></div>
+      <div class="stat"><span class="stat-number">Same Day</span><span class="stat-label">PDF report<br>delivered</span></div>
+    </div>
+  </div>
+  <div class="scroll-hint"><span>Scroll</span><div class="scroll-line"></div></div>
+</section>
+
+<section class="problem">
+  <p class="section-label reveal">The Risk Is Real</p>
+  <div class="problem-grid">
+    <div class="reveal">
+      <h2 class="problem-heading">
+        Renting in Toronto<br>from abroad is<br>
+        <em>genuinely dangerous.</em>
+        <p>The Toronto rental market moves fast, and overseas tenants have no way to verify what they're being shown. Thousands of dollars are committed on the basis of six photos and a floor plan.</p>
+      </h2>
+    </div>
+    <ul class="problem-risks reveal">
+      <li class="risk-item"><span class="risk-icon">⚠️</span><div class="risk-text"><strong>Rental Fraud Is Rising</strong><p>Scammers post photos of properties they don't own. Fake landlords collect first and last month's rent, then vanish — no recourse, no refund.</p></div></li>
+      <li class="risk-item"><span class="risk-icon">📷</span><div class="risk-text"><strong>Listings Are Designed to Mislead</strong><p>Wide-angle lenses make small rooms look spacious. Edited photos hide mould, water damage, and worn fixtures. You only find out on move-in day.</p></div></li>
+      <li class="risk-item"><span class="risk-icon">📄</span><div class="risk-text"><strong>Leases Contain Traps</strong><p>Non-standard clauses and illegal terms go unnoticed when you're reviewing remotely, under time pressure, in an unfamiliar legal system.</p></div></li>
+      <li class="risk-item"><span class="risk-icon">🌍</span><div class="risk-text"><strong>No Way to Verify Remotely</strong><p>You cannot smell the hallway, speak to a neighbour, or feel the neighbourhood at 11pm. You are making a $4,000/month decision blind.</p></div></li>
+    </ul>
+  </div>
+</section>
+
+<div class="quote-strip">
+  <div class="quote-inner reveal">
+    <p class="quote-text">"Before you send a $5,000 deposit, have someone you trust on the ground."</p>
+    <span class="quote-attr">Toronto Rental Concierge — Our Promise</span>
+  </div>
+</div>
+
+<section class="offer" id="offer">
+  <div class="offer-inner">
+    <div class="offer-top reveal">
+      <div>
+        <p class="section-label">Rental Verification Concierge</p>
+        <h2 class="offer-heading">Everything you need to decide<br>with <em>complete confidence.</em></h2>
+      </div>
+      <div class="offer-price">
+        <p class="price-eyebrow">Starting from</p>
+        <div class="price-num">$350</div>
+        <p class="price-suffix">$350 – $500 per property</p>
+      </div>
+    </div>
+    <div class="deliverables reveal">
+      <div class="dlv"><div class="dlv-num">01</div><div class="dlv-title">Private Scheduled Viewing</div><div class="dlv-desc">We attend on your behalf at a dedicated time. No group viewings. No rushed walkthroughs. Your exclusive 45–60 minute session.</div></div>
+      <div class="dlv"><div class="dlv-num">02</div><div class="dlv-title">Live Zoom Walkthrough</div><div class="dlv-desc">Join in real time and direct every step. Ask questions as we move through each room — or receive the full 4K recorded tour on your schedule.</div></div>
+      <div class="dlv"><div class="dlv-num">03</div><div class="dlv-title">Deep In-Unit Inspection</div><div class="dlv-desc">Moisture checks, damage assessment, appliance condition, smell, light, storage. We look at everything a staged listing is designed to hide.</div></div>
+      <div class="dlv"><div class="dlv-num">04</div><div class="dlv-title">Building Common Areas Review</div><div class="dlv-desc">Lobby, laundry, parking, mailroom, hallways. The condition of shared spaces tells you everything about how the building is actually managed.</div></div>
+      <div class="dlv"><div class="dlv-num">05</div><div class="dlv-title">Neighbourhood Walk Video</div><div class="dlv-desc">We walk the immediate area — transit stops, groceries, street safety, noise levels. The real version, not the marketing version.</div></div>
+      <div class="dlv"><div class="dlv-num">06</div><div class="dlv-title">Honest Assessment + Lease Scan</div><div class="dlv-desc">Would we rent this? We tell you plainly. Plus a review of your lease for unusual or red-flag clauses — not legal advice, but an honest second opinion.</div></div>
+    </div>
+    <div class="offer-footer reveal">
+      <span class="offer-footer-icon">📋</span>
+      <p class="offer-footer-text">Delivered the <strong>same evening:</strong> a full PDF report with photos, findings, red flags, and a clear recommendation. Decide with confidence before you commit a cent.</p>
+    </div>
+  </div>
+</section>
+
+<section class="clients">
+  <div class="clients-inner">
+    <div class="clients-header reveal">
+      <p class="section-label">Who We Serve</p>
+      <h2 class="clients-heading">Those who <em>cannot afford<br>to get it wrong.</em></h2>
+    </div>
+    <div class="client-cards">
+      <div class="client-card reveal"><span class="client-icon">🎓</span><div class="client-name">International Students</div><div class="client-desc">Arriving from India, China, the Middle East. Securing housing months before landing. Family funds on the line, no local network to call on.</div><div class="client-spend">Typical rent: $2,200 – $3,000 / month<br>Upfront exposure: $5,000 – $7,000</div></div>
+      <div class="client-card reveal" style="transition-delay:0.12s"><span class="client-icon">💼</span><div class="client-name">Relocating Tech Workers</div><div class="client-desc">Joining a Toronto company with a start date already set. Need somewhere liveable, fast. No time to fly out — no room for a mistake.</div><div class="client-spend">Typical rent: $3,000 – $4,500 / month<br>Upfront exposure: $6,000 – $9,000</div></div>
+      <div class="client-card reveal" style="transition-delay:0.24s"><span class="client-icon">👨‍👩‍👧</span><div class="client-name">Immigrating Families</div><div class="client-desc">Planning a permanent move. Children's schools decided. Cannot risk a fraudulent landlord, a dangerous building, or a unit that doesn't match the listing.</div><div class="client-spend">Typical rent: $3,200 – $4,800 / month<br>Upfront exposure: $7,000 – $10,000</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="math">
+  <div class="reveal">
+    <p class="section-label" style="text-align:center;">The Simple Calculation</p>
+    <h2 class="math-heading">The math is <em>undeniable.</em></h2>
+    <p class="math-sub">At Toronto rent prices, $400 for certainty is not an expense.</p>
+  </div>
+  <div class="math-boxes reveal">
+    <div class="math-box danger"><div class="math-box-eyebrow">Your Risk Without Us</div><div class="math-amount">$8,000</div><div class="math-desc">Deposit + first & last month's rent. Gone if the property is misrepresented, fraudulent, or unliveable on arrival.</div></div>
+    <div class="math-vs-cell"><span class="math-vs">vs</span></div>
+    <div class="math-box safe"><div class="math-box-eyebrow">Cost of Certainty</div><div class="math-amount">$400</div><div class="math-desc">One honest verification. One same-day report. One trusted person on the ground before you commit a cent.</div></div>
+  </div>
+  <p class="math-conclusion reveal">For the cost of a single dinner in downtown Toronto, you protect a financial commitment most people make once and cannot undo. <strong>$400 for certainty is not an expense — it's the most rational decision you'll make in your entire move.</strong></p>
+</section>
+
+<section class="process" id="how">
+  <div class="process-inner">
+    <div class="process-top reveal">
+      <div>
+        <p class="section-label">How It Works</p>
+        <h2 class="process-heading">Simple. Fast.<br><em>No surprises.</em></h2>
+      </div>
+      <div class="process-time">Turnaround: same day<br>Availability: limited weekly slots</div>
+    </div>
+    <div class="process-steps reveal">
+      <div class="process-track"></div>
+      <div class="step"><div class="step-circle">1</div><div class="step-title">Share the Listing</div><div class="step-desc">Send us the property address and your preferred viewing window. We confirm availability and quote your exact price within the hour.</div></div>
+      <div class="step"><div class="step-circle">2</div><div class="step-title">We Book the Viewing</div><div class="step-desc">We contact the landlord or agent and arrange a private session — coordinated around your timezone and Zoom availability.</div></div>
+      <div class="step"><div class="step-circle">3</div><div class="step-title">Live Walkthrough</div><div class="step-desc">Join on Zoom and direct the inspection in real time. Or receive the full 4K recorded walkthrough within a few hours.</div></div>
+      <div class="step"><div class="step-circle">4</div><div class="step-title">Same-Day Report</div><div class="step-desc">Your PDF lands the same evening — photos, findings, red flags, and our honest recommendation. You decide with full information.</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="book">
+  <div class="cta-inner">
+    <p class="section-label reveal" style="text-align:center;">Ready to proceed safely?</p>
+    <h2 class="cta-heading reveal">Secure your inspection.<em>Secure your home.</em></h2>
+    <p class="cta-sub reveal">We take a limited number of verifications each week to ensure every client receives our complete attention. Reach out now to check availability for your property.</p>
+    <p class="cta-availability reveal">Limited weekly slots available · Response within 2 hours</p>
+    <div class="cta-actions reveal">
+      <a href="mailto:hello@torontorentalconcierge.com?subject=Verification%20Request" class="btn-primary">Request a Verification — $350–$500</a>
+      <span class="cta-email-label">Or write to us directly</span>
+      <a href="mailto:hello@torontorentalconcierge.com" class="cta-email">hello@torontorentalconcierge.com</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Toronto Rental Concierge</div>
+  <div class="footer-links">
+    <a href="#offer" class="footer-link">What's Included</a>
+    <a href="#how" class="footer-link">How It Works</a>
+    <a href="mailto:hello@torontorentalconcierge.com" class="footer-link">Contact</a>
+  </div>
+  <p class="footer-note">Toronto, Canada · Not a licensed real estate brokerage · Lease review is not legal advice.</p>
+</footer>
+
+<div class="booking-bar" id="bookingBar">
+  <div class="booking-bar-text"><strong>Toronto Rental Concierge</strong> — Private due diligence for overseas tenants</div>
+  <div class="booking-bar-price">$350 – $500</div>
+  <a href="mailto:hello@torontorentalconcierge.com?subject=Verification%20Request" class="btn-primary">Book a Verification</a>
+</div>
+
+<script>
+  const nav = document.getElementById('nav');
+  const bar = document.getElementById('bookingBar');
+  const threshold = window.innerHeight * 0.7;
+
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    nav.classList.toggle('scrolled', y > 40);
+    bar.classList.toggle('visible', y > threshold);
+  }, { passive: true });
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

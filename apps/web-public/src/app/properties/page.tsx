@@ -35,7 +35,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn, ensureImageUrl } from '@/lib/utils';
-import { Building2 } from 'lucide-react';
+import { Building2, Heart } from 'lucide-react';
+import { toast } from 'sonner';
 
 type Property = {
   id: string;
@@ -169,15 +170,23 @@ export default function PropertiesPage() {
       if (isSaved) {
         await apiFetch<{ success: true }>(`/users/me/saved/${propertyId}`, { method: 'DELETE' }, true);
         setSavedIds((prev) => prev.filter((id) => id !== propertyId));
+        toast.success('Removed from saved', {
+          description: 'Property removed from your saved list.',
+        });
       } else {
         await apiFetch<{ success: true }>('/users/me/saved', {
           method: 'POST',
           body: JSON.stringify({ propertyId }),
         }, true);
         setSavedIds((prev) => [...prev, propertyId]);
+        toast.success('Saved property', {
+          description: 'Added to your saved list.',
+        });
       }
     } catch {
-      // noop for MVP
+      toast.error('Something went wrong', {
+        description: 'Could not update saved list. Try again.',
+      });
     }
   }
 
@@ -355,12 +364,12 @@ export default function PropertiesPage() {
                             No image
                           </div>
                         )}
+                        <Badge variant="secondary" className="absolute right-2 top-2 z-40 text-xs font-medium shadow-sm">
+                          {property.type}
+                        </Badge>
                       </div>
                     </Link>
                     <CardHeader className="flex-1">
-                      <CardAction>
-                        <Badge variant="secondary">{property.type}</Badge>
-                      </CardAction>
                       <CardTitle className="text-xl">
                         <Link href={`/properties/${property.id}`} className="hover:underline">
                           {property.title}
@@ -392,8 +401,12 @@ export default function PropertiesPage() {
                         disabled={!isAuthed}
                         onClick={() => toggleSaved(property.id)}
                         className={cn('min-h-11 touch-manipulation', !isAuthed ? 'cursor-not-allowed' : 'w-full sm:w-auto')}
+                        aria-label={savedIds.includes(property.id) ? 'Remove from saved' : 'Save property'}
                       >
-                        {savedIds.includes(property.id) ? 'Saved' : 'Save'}
+                        <Heart
+                          className={cn('h-4 w-4', savedIds.includes(property.id) && 'fill-current')}
+                          aria-hidden
+                        />
                       </Button>
                     </CardFooter>
                   </div>

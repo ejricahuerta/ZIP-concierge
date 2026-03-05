@@ -195,13 +195,13 @@ export default function LandlordDashboardPage() {
                             <Building2 className="h-12 w-12" aria-hidden />
                           </div>
                         )}
+                        <Badge variant="secondary" className="absolute right-2 top-2 z-40 text-xs font-normal shadow-sm">
+                          {p.type}
+                        </Badge>
                       </Link>
                       <div className="flex flex-1 flex-col justify-between gap-4 p-4 sm:flex-row sm:items-center sm:p-5">
                         <Link href={`/properties/${p.id}`} className="min-w-0 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded">
                           <CardHeader className="p-0">
-                            <CardAction>
-                              <Badge variant="secondary" className="text-xs font-normal">{p.status}</Badge>
-                            </CardAction>
                             <CardTitle className="text-base font-semibold leading-tight line-clamp-1">{p.title}</CardTitle>
                             <CardDescription className="mt-1">
                               {p.city} · {p.type} · ${p.price}/mo
