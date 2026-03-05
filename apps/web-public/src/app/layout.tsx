@@ -16,7 +16,10 @@ const dmSans = DM_Sans({
   variable: '--font-dm-sans',
 });
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ziphvs.com';
+
 export const metadata: Metadata = {
+  metadataBase: new URL(baseUrl),
   title: 'ZIP Home Rental Verification | Private Due Diligence for Overseas Tenants',
   description: 'Before you send a deposit, have someone you trust on the ground. Private viewings, live or 4K walkthroughs, and honest same-day reports for Toronto rentals. Contact info@ziphvs.com.',
   keywords: ['rental verification', 'Toronto rental', 'overseas tenants', 'rental due diligence', 'property verification', 'international students', 'Toronto housing'],
@@ -25,6 +28,20 @@ export const metadata: Metadata = {
     title: 'ZIP Home Rental Verification | Private Due Diligence for Overseas Tenants',
     description: 'Before you send a deposit, have someone you trust on the ground. Private viewings and honest same-day reports for Toronto rentals.',
     type: 'website',
+    images: [
+      {
+        url: '/og.png',
+        width: 1200,
+        height: 1200,
+        alt: 'ZIP Home Rental Verification — Private Rental Due Diligence for Overseas Tenants',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ZIP Home Rental Verification | Private Due Diligence for Overseas Tenants',
+    description: 'Before you send a deposit, have someone you trust on the ground. Private viewings and honest same-day reports for Toronto rentals.',
+    images: ['/og.png'],
   },
   icons: { icon: '/icon' },
 };
