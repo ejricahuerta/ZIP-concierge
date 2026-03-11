@@ -18,6 +18,15 @@ export function LandingFooter() {
         <a href={MAILTO} className="landing-footer-link">
           Contact
         </a>
+        <Link href="/privacy" className="landing-footer-link">
+          Privacy Policy
+        </Link>
+        <Link href="/terms" className="landing-footer-link">
+          Terms &amp; Conditions
+        </Link>
+        <Link href="/cookies" className="landing-footer-link">
+          Cookie Policy
+        </Link>
       </nav>
       <p className="landing-footer-note">
         Toronto, Canada · Not a licensed real estate brokerage · Lease review is not legal advice.

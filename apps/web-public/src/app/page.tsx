@@ -53,7 +53,7 @@ const DELIVERABLES = [
   { num: '03', title: 'Deep In-Unit Inspection', desc: 'Moisture checks, damage assessment, appliance condition, smell, light, storage. We look at everything a staged listing is designed to hide.' },
   { num: '04', title: 'Building Common Areas Review', desc: 'Lobby, laundry, parking, mailroom, hallways. The condition of shared spaces tells you everything about how the building is actually managed.' },
   { num: '05', title: 'Neighbourhood Walk Video', desc: 'We walk the immediate area — transit stops, groceries, street safety, noise levels. The real version, not the marketing version.' },
-  { num: '06', title: 'Honest Assessment + Lease Scan', desc: 'Would we rent this? We tell you plainly. Plus a review of your lease for unusual or red-flag clauses — not legal advice, but an honest second opinion.' },
+  { num: '06', title: 'Honest Assessment', desc: 'Would we rent this? We tell you plainly.' },
 ] as const;
 
 const CLIENTS = [
@@ -66,7 +66,7 @@ const STEPS = [
   { num: 1, title: 'Share the Listing', desc: 'Send us the property address and your preferred viewing window. We confirm availability and quote your exact price within the hour.' },
   { num: 2, title: 'We Book the Viewing', desc: 'We contact the landlord or agent and arrange a private session — coordinated around your timezone and Zoom availability.' },
   { num: 3, title: 'Live Walkthrough', desc: 'Join on Zoom and direct the inspection in real time. Or receive the full 4K recorded walkthrough within a few hours.' },
-  { num: 4, title: 'Same-Day Report', desc: 'Your PDF lands the same evening — photos, findings, red flags, and our honest recommendation. You decide with full information.' },
+  { num: 4, title: 'One-Day Report', desc: 'Your PDF lands within one day — photos, findings, red flags, and our honest recommendation. You decide with full information.' },
 ] as const;
 
 export default function HomePage() {
@@ -134,7 +134,7 @@ export default function HomePage() {
               </span>
             </div>
             <div className="landing-hero-stat">
-              <span className="landing-hero-stat-num">Same Day</span>
+              <span className="landing-hero-stat-num">One Day</span>
               <span className="landing-hero-stat-label">
                 PDF report
                 <br />
@@ -227,7 +227,7 @@ export default function HomePage() {
               <ClipboardList className="landing-offer-footer-icon-svg" strokeWidth={1.5} />
             </span>
             <p className="landing-offer-footer-text">
-              Delivered the <strong>same evening:</strong> a full PDF report with photos, findings, red flags, and a clear recommendation. Decide with confidence before you commit a cent.
+              Delivered <strong>within one day:</strong> a full PDF report with photos, findings, red flags, and a clear recommendation. Decide with confidence before you commit a cent.
             </p>
           </div>
         </div>
@@ -287,7 +287,7 @@ export default function HomePage() {
               <div className="landing-math-box-eyebrow">Cost of Certainty</div>
               <div className="landing-math-amount">$400</div>
               <div className="landing-math-desc">
-                One honest verification. One same-day report. One trusted person on the ground before you commit a cent.
+                One honest verification. One one-day report. One trusted person on the ground before you commit a cent.
               </div>
             </div>
           </div>
@@ -311,7 +311,7 @@ export default function HomePage() {
               </h2>
             </div>
             <div className="landing-process-time">
-              Turnaround: same day
+              Turnaround: one day
               <br />
               Availability: limited weekly slots
             </div>
