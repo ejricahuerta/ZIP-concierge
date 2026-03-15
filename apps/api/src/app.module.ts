@@ -8,6 +8,7 @@ import { PropertiesModule } from './properties/properties.module';
 import { UniversitiesModule } from './universities/universities.module';
 import { HealthModule } from './health/health.module';
 import { VerificationModule } from './verification/verification.module';
+import { ContactModule } from './contact/contact.module';
 import { RootController } from './root.controller';
 
 @Module({
@@ -22,6 +23,7 @@ import { RootController } from './root.controller';
     UniversitiesModule,
     HealthModule,
     VerificationModule,
+    ContactModule,
   ],
 })
 export class AppModule {}

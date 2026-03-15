@@ -58,30 +58,23 @@ export class UsersService {
     const rows = await this.prisma.savedProperty.findMany({
       where: { userId },
       include: {
-        property: {
-          include: {
-            verificationReports: { where: { status: 'COMPLETED' }, select: { id: true } },
-          },
-        },
+        property: true,
       },
       orderBy: { createdAt: 'desc' },
     });
-    return rows.map((row) => {
-      const { verificationReports, ...property } = row.property;
-      return {
-        ...row,
-        property: {
-          id: property.id,
-          title: property.title,
-          city: property.city,
-          type: property.type,
-          price: property.price,
-          bedrooms: property.bedrooms,
-          images: property.images,
-          verified: verificationReports.length > 0,
-        },
-      };
-    });
+    return rows.map((row) => ({
+      ...row,
+      property: {
+        id: row.property.id,
+        title: row.property.title,
+        city: row.property.city,
+        type: row.property.type,
+        price: row.property.price,
+        bedrooms: row.property.bedrooms,
+        images: row.property.images,
+        verified: row.property.verified,
+      },
+    }));
   }
 
   async saveProperty(userId: string, propertyId: string) {

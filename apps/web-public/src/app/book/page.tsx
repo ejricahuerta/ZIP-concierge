@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { FormEvent, useRef } from 'react';
+import { FormEvent, useRef, useState } from 'react';
 import '../landing.css';
 import { LandingNav } from '@/components/landing-nav';
 import { LandingFooter } from '@/components/landing-footer';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
 
 function GrainOverlay() {
   return <div className="landing-grain" aria-hidden />;
@@ -12,17 +14,29 @@ function GrainOverlay() {
 
 export default function BookVerificationPage() {
   const formRef = useRef<HTMLFormElement>(null);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = formRef.current;
     if (!form) return;
     const data = new FormData(form);
     const payload: Record<string, string> = {};
-    data.forEach((value, key) => {
-      payload[key] = String(value);
-    });
-    console.log('Book verification form submitted:', payload);
+    data.forEach((value, key) => { payload[key] = String(value); });
+
+    setStatus('loading');
+    try {
+      const res = await fetch(`${API_URL}/contact/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Request failed');
+      setStatus('success');
+      form.reset();
+    } catch {
+      setStatus('error');
+    }
   }
 
   return (
@@ -108,10 +122,20 @@ export default function BookVerificationPage() {
               />
             </div>
             <div className="landing-form-submit">
-              <button type="submit" className="landing-btn-primary">
-                Send request
+              <button type="submit" className="landing-btn-primary" disabled={status === 'loading'}>
+                {status === 'loading' ? 'Sending…' : 'Send request'}
               </button>
             </div>
+            {status === 'success' && (
+              <p className="landing-muted" style={{ marginTop: 16 }}>
+                Request sent — we'll be in touch shortly.
+              </p>
+            )}
+            {status === 'error' && (
+              <p className="landing-muted" style={{ marginTop: 16, color: 'var(--danger, #e55)' }}>
+                Something went wrong. Please try again or email us directly.
+              </p>
+            )}
           </form>
 
           <p className="landing-muted" style={{ marginTop: 48, fontSize: '0.8rem' }}>

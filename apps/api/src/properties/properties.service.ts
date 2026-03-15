@@ -13,9 +13,9 @@ export class PropertiesService {
     if (params.city) where.city = params.city;
     if (params.type) where.type = params.type;
     if (params.verified === true) {
-      where.verificationReports = { some: { status: 'COMPLETED' } };
+      where.verified = true;
     } else if (params.verified === false) {
-      where.NOT = { verificationReports: { some: { status: 'COMPLETED' } } };
+      where.verified = false;
     }
     const [rows, total] = await Promise.all([
       this.prisma.property.findMany({
@@ -26,16 +26,11 @@ export class PropertiesService {
         include: {
           owner: { select: { id: true, name: true } },
           _count: { select: { savedBy: true } },
-          verificationReports: { where: { status: 'COMPLETED' }, select: { id: true } },
         },
       }),
       this.prisma.property.count({ where }),
     ]);
-    const items = rows.map((p) => {
-      const { verificationReports, ...rest } = p;
-      return { ...rest, verified: verificationReports.length > 0 };
-    });
-    return { items, total };
+    return { items: rows, total };
   }
 
   async findOne(id: string) {
@@ -44,12 +39,10 @@ export class PropertiesService {
       include: {
         owner: { select: { id: true, name: true } },
         nearbyUniversities: { include: { university: true } },
-        verificationReports: { where: { status: 'COMPLETED' }, select: { id: true } },
       },
     });
     if (!property) return null;
-    const { verificationReports, ...rest } = property;
-    return { ...rest, verified: verificationReports.length > 0 };
+    return property;
   }
 
   async findByOwnerId(ownerId: string) {
@@ -59,13 +52,9 @@ export class PropertiesService {
       include: {
         _count: { select: { savedBy: true } },
         nearbyUniversities: { include: { university: true } },
-        verificationReports: { where: { status: 'COMPLETED' }, select: { id: true } },
       },
     });
-    return rows.map((p) => {
-      const { verificationReports, ...rest } = p;
-      return { ...rest, verified: verificationReports.length > 0 };
-    });
+    return rows;
   }
 
   async create(ownerId: string, dto: CreatePropertyDto) {
